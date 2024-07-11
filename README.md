@@ -4,8 +4,11 @@ A simple and useful set of toggle commands for Markdown. Similar to [Obsidian](h
 
 ### Features
 - Handles quotes, headings, lists (unordered and ordered), and checkboxes
+![markdown_common](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/a6843366-ba67-4828-a6c3-780a2e0fba5c)
 
 - Cycle through different levels of headings, types of lists, and states of checkboxes
+![cyclic_toggling01](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/f52d5719-5a9a-4770-b149-808f673a1a3f)
+![cyclic_toggling02](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/585fa715-2df8-40df-8f69-bca478340c30)
 
 - Automatically continue quotes, lists, and checkboxes when starting a new line
 - Use Vim's dot (`.`) command to repeat toggle actions (only in Normal mode)
@@ -14,6 +17,8 @@ A simple and useful set of toggle commands for Markdown. Similar to [Obsidian](h
   - Blankhead Skip: Skip blank lines and headings in Visual mode (except for `quote()`)
   - Inner Indent: Insert an indent for new lines within quoted text
   - Autolist Same-state: Maintain checkbox state when continuing lists
+![config_switch01](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/d34359b2-febe-4165-ba77-eeee79676a95)
+![config_switch02](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/97f9667d-a2c4-4351-9a30-6a370827e48f)
 
 ## Installation
 <details>
