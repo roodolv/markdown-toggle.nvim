@@ -14,6 +14,8 @@ local M = {}
 ---@field enable_autolist boolean
 ---@field enable_auto_samestate boolean
 ---@field enable_dot_repeat boolean
+---@field mimic_obsidian_list boolean
+---@field mimic_obsidian_cycle boolean
 
 ---@type MarkdownToggleConfig
 local config = {
@@ -31,6 +33,11 @@ local config = {
   enable_box_cycle = false,
   -- The checkbox marks table used in cycle-mode (box_table[1] is used as the default checked-state)
   box_table = { "x", "~", "!", ">" },
+
+  -- Mimic the behavior of Obsidian's "Toggle bullet list" on `list()`
+  mimic_obsidian_list = true,
+  -- Mimic the behavior of Obsidian's "Cycle bullet/checkbox" on `checkbox()`
+  mimic_obsidian_cycle = true,
 
   -- The heading marks table used in `markdown-toggle.heading`
   heading_table = { "#", "##", "###", "####", "#####" },

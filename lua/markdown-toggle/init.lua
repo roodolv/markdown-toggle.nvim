@@ -102,7 +102,7 @@ end
 local matched_olist = function(line) return line:match("^(%s*)(%d+)%.%s") end
 local has_olist = function(line) return matched_olist(line) ~= nil end
 local create_olist = function(line) return (line:gsub("^(%s*)(.*)", "%11. %2")) end
-local remove_olist = function(line) return line:gsub("(%s*)(%d+%.)%s", "%1", 1) end
+local remove_olist = function(line) return line:gsub("(%s*)%d+%.%s", "%1", 1) end
 local list_to_olist = function(line) return (line:gsub("^(%s*)[%-%+%*%=]%s(.*)", "%11. %2")) end
 local box_to_olist = function(line) return (line:gsub("^(%s*)[%-%+%*%=]%s%[[ x~!>]%]%s(.*)", "%11. %2")) end
 
@@ -136,6 +136,7 @@ local uncheck_box = function(line) return (line:gsub("([%-%+%*%=]%s)%[[x~!>]%]",
 local create_box = function(line, mark)
   return (line:gsub("^(%s*)(.*)", "%1" .. string.format("%s %s ", mark, empty_box_str) .. "%2"))
 end
+local remove_box = function(line) return line:gsub("(%s*)[%-%+%*%=]%s%[[ x~!>]%]%s", "%1", 1) end
 local list_to_box = function(line, mark)
   return (line:gsub("^(%s*)[%-%+%*%=]%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box_str) .. "%2"))
 end
@@ -151,9 +152,9 @@ local cycled_box_state = function(line)
   end
   return states[1] ~= nil and states[1] or " "
 end
-local cycle_box = function(line)
+local cycle_box = function(line, mark)
   local state = cycled_box_state(line)
-  if state == "end" then return uncheck_box(line) end
+  if state == "end" then return current_config.mimic_obsidian_cycle and box_to_list(line, mark) or uncheck_box(line) end
   return (line:gsub("(%[)[ x~!>](%])", "%1" .. state .. "%2", 1))
 end
 
@@ -211,7 +212,7 @@ local get_toggled_list = function(line)
   local mark = current_config.list_table[1] and current_config.list_table[1] or "-"
 
   if has_box(line) then
-    return box_to_list(line, mark)
+    return current_config.mimic_obsidian_list and remove_box(line) or box_to_list(line, mark)
   elseif has_list(line) then
     return current_config.enable_list_cycle and cycle_list(line) or remove_list(line)
   elseif has_olist(line) then
@@ -246,15 +247,18 @@ local get_toggled_box = function(line)
   local mark = current_config.list_table[1] and current_config.list_table[1] or "-"
 
   if state == " " then
-    return current_config.enable_box_cycle and cycle_box(line) or check_box(line)
+    return current_config.enable_box_cycle and cycle_box(line, mark) or check_box(line)
   elseif state ~= nil then
-    return current_config.enable_box_cycle and cycle_box(line) or uncheck_box(line)
+    return current_config.enable_box_cycle and cycle_box(line, mark) or uncheck_box(line)
   elseif has_list(line) then
     return list_to_box(line, mark)
   elseif has_olist(line) then
     return olist_to_box(line, mark)
   else
-    return create_box(line, mark)
+    -- On the Obsidian-cycle-mode, at first this plugin toggle the bullet-list, and then toggle the checkbox.
+    return (current_config.enable_box_cycle and current_config.mimic_obsidian_cycle) and create_list(line, mark)
+      -- By default, the checkbox is toggled first.
+      or create_box(line, mark)
   end
 end
 
@@ -439,5 +443,8 @@ M.switch_inner_indent = function() switch_option("enable_inner_indent") end
 M.switch_auto_samestate = function() switch_option("enable_auto_samestate") end
 M.switch_list_cycle = function() switch_option("enable_list_cycle") end
 M.switch_box_cycle = function() switch_option("enable_box_cycle") end
+
+M.switch_mimic_obsidian_list = function() switch_option("mimic_obsidian_list") end
+M.switch_mimic_obsidian_cycle = function() switch_option("mimic_obsidian_cycle") end
 
 return M

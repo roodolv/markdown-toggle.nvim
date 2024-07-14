@@ -85,6 +85,11 @@ require("markdown-toggle").setup({
   -- The checkbox marks table used in cycle-mode (box_table[1] is used as the default checked-state)
   box_table = { "x", "~", "!", ">" },
 
+  -- Mimic the behavior of Obsidian's "Toggle bullet list" on `list()`
+  mimic_obsidian_list = true,
+  -- Mimic the behavior of Obsidian's "Cycle bullet/checkbox" on `checkbox()`
+  mimic_obsidian_cycle = true,
+
   -- The heading marks table used in `markdown-toggle.heading`
   heading_table = { "#", "##", "###", "####", "#####" },
 
@@ -192,7 +197,76 @@ This plugin provides the following set of API functions:
 |                | `heading_dot()`  | Normal         |
 | Autolist       | `autolist_up()`<br>`autolist_down()` | Normal |
 |                | `autolist_cr()`  | Insert         |
-| Config-switch  | `switch_unmarked_only()`<br>`switch_blankhead_skip()`<br>`switch_inner_indent()`<br>`switch_auto_samestate()`<br>`switch_list_cycle()`<br>`switch_box_cycle()` | Normal |
+| Config-switch  | `switch_unmarked_only()`<br>`switch_blankhead_skip()`<br>`switch_inner_indent()`<br>`switch_auto_samestate()`<br>`switch_list_cycle()`<br>`switch_box_cycle()`<br>`switch_mimic_obsidian_list()`<br>`switch_mimic_obsidian_cycle()` | Normal |
+
+## Tips
+
+### Mimicking Obsidian
+If you don't want to mimic [Obsidian](https://obsidian.md)'s behavior, set `mimic_obsidian_list` and `mimic_obsidian_cycle` to `false` in your `init.lua` or config.
+
+These options are set to `true` by default.
+
+API functions are available, allowing you to set keymaps for switching them.
+- `switch_mimic_obsidian_list()`
+- `switch_mimic_obsidian_cycle()`
+
+#### `mimic_obsidian_list`
+- `mimic_obsidian_list = true`:
+```
+- [ ] foo
+↓ execute `list()`
+foo
+↓
+- foo
+↓
+foo
+↓
+```
+
+- `mimic_obsidian_list = false`:
+```
+- [ ] foo
+↓ execute `list()`
+- foo
+↓
+foo
+↓
+- foo
+↓
+```
+
+#### `mimic_obsidian_cycle`
+- `mimic_obsidian_cycle = true`:
+```lua
+foo
+↓ execute `checkbox()` with `enable_box_cycle = true`
+- foo
+↓
+- [ ] foo
+↓
+- [x] foo
+↓
+- [~] foo
+↓
+- foo
+↓
+- [ ] foo
+↓
+```
+
+- `mimic_obsidian_cycle = false`:
+```lua
+foo
+↓ execute `checkbox()` with `enable_box_cycle = true`
+- [ ] foo
+↓
+- [x] foo
+↓
+- [~] foo
+↓
+- [ ] foo
+↓
+```
 
 ## Related Plugins
 - [markdowny.nvim](https://github.com/antonk52/markdowny.nvim)
