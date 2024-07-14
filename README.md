@@ -237,7 +237,7 @@ foo
 
 #### `mimic_obsidian_cycle`
 - `mimic_obsidian_cycle = true`:
-```lua
+```
 foo
 ↓ execute `checkbox()` with `enable_box_cycle = true`
 - foo
@@ -255,7 +255,7 @@ foo
 ```
 
 - `mimic_obsidian_cycle = false`:
-```lua
+```
 foo
 ↓ execute `checkbox()` with `enable_box_cycle = true`
 - [ ] foo
