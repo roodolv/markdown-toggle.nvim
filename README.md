@@ -281,8 +281,12 @@ foo
 - [markdown-togglecheck](https://github.com/nfrid/markdown-togglecheck)
 
 ## Todo
-- [ ] Implement plugin commands (e.g., `:MarkdownToggleQuote`) to call API functions
-- [ ] Improve Visual-mode behavior of `heading()` for lines that start with `#`
+- [ ] Rename and consolidate options
+    - Use more generic config names
 - [ ] Expand the README with config examples inspired by popular Markdown editors
+- [ ] Allow `quote()` to be used without whitespace at the beginning of a line
+- [ ] Implement recalculation of ordered lists
+- [ ] Improve Visual-mode behavior of `heading()` for lines that start with `#`
+- [ ] Implement plugin commands (e.g., `:MarkdownToggleQuote`) to call API functions
 - [ ] Integrate `v:count` (`vim.v.count`) support to handle repeated actions
   - Example: `2<C-h>` should invoke the `heading()` function twice
