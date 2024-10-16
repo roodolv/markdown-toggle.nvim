@@ -42,7 +42,7 @@ local config = {
   enable_blankhead_skip = true,
   -- Insert an indent for new lines within quoted text
   enable_inner_indent = false,
-  -- Toggle only unmarked lines initially
+  -- Toggle only unmarked lines first
   enable_unmarked_only = true,
   -- Automatically continue lists on new lines
   enable_autolist = true,

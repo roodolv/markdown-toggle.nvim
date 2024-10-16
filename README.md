@@ -13,7 +13,7 @@ A simple and useful set of toggle commands for Markdown. Similar to [Obsidian](h
 - Automatically continue quotes, lists, and checkboxes when starting a new line
 - Use Vim's dot (`.`) command to repeat toggle actions (only in Normal mode)
 - Change plugin settings **on-the-fly**
-  - Unmarked Only: Toggle only unmarked lines initially
+  - Unmarked Only: Toggle only unmarked lines first
   - Blankhead Skip: Skip blank lines and headings in Visual mode (except for `quote()`)
   - Inner Indent: Insert an indent for new lines within quoted text
   - Autolist Same-state: Maintain checkbox state when continuing lists
@@ -68,6 +68,10 @@ require("markdown-toggle").setup()
 
 ### Default Config
 The default settings are as follows:
+
+<details>
+  <summary>Default Config</summary>
+
 ```lua
 require("markdown-toggle").setup({
   -- If true, the auto-setup for the default keymaps is enabled
@@ -75,25 +79,22 @@ require("markdown-toggle").setup({
   -- The keymaps are valid only for these filetypes
   filetypes = { "markdown", "markdown.mdx" },
 
-  -- Cycle the marks in user-defined table when toggling lists
-  enable_list_cycle = false,
   -- The list marks table used in cycle-mode (list_table[1] is used as the default list-mark)
   list_table = { "-", "+", "*", "=" },
+  -- Cycle the marks in user-defined table when toggling lists
+  cycle_list_table = false,
 
-  -- Cycle the marks in user-defined table when toggling checkboxes
-  enable_box_cycle = false,
   -- The checkbox marks table used in cycle-mode (box_table[1] is used as the default checked-state)
   box_table = { "x", "~", "!", ">" },
-
-  -- Mimic the behavior of Obsidian's "Toggle bullet list" on `list()`
-  mimic_obsidian_list = true,
-  -- Mimic the behavior of Obsidian's "Cycle bullet/checkbox" on `checkbox()`
-  mimic_obsidian_cycle = true,
+  -- Cycle the marks in user-defined table when toggling checkboxes
+  cycle_box_table = false,
+  -- A bullet list is toggled before turning into a checkbox (similar to how it works in Obsidian).
+  list_before_box = false,
 
   -- The heading marks table used in `markdown-toggle.heading`
   heading_table = { "#", "##", "###", "####", "#####" },
 
-  -- Skip blank lines and headings in Visual mode (except for quotes)
+  -- Skip blank lines and headings in Visual mode (except for `quote()`)
   enable_blankhead_skip = true,
   -- Insert an indented quote for new lines within quoted text
   enable_inner_indent = false,
@@ -107,6 +108,98 @@ require("markdown-toggle").setup({
   enable_dot_repeat = true,
 })
 ```
+</details>
+
+### Config for Cycling
+<details>
+  <summary>List-Cycling</summary>
+
+- `cycle_list_table = false` (default):
+```
+foo
+↓ call `list()`
+- foo
+↓
+foo
+↓
+```
+
+- `cycle_list_table = true` and `list_table = { "-", "+" }`:
+```
+foo
+↓ call `list()`
+- foo
+↓
++ foo
+↓
+foo
+↓
+```
+</details>
+
+<details>
+  <summary>Checkbox-Cycling</summary>
+
+- `cycle_box_table = false` (default):
+```
+foo
+↓ call `checkbox()`
+- foo
+↓
+- [ ] foo
+↓
+- [x] foo
+↓
+- foo
+↓
+```
+
+- `cycle_box_table = true` and `box_table = { "x", "~" }`:
+```
+foo
+↓ call `checkbox()`
+- foo
+↓
+- [ ] foo
+↓
+- [x] foo
+↓
+- [~] foo
+↓
+- foo
+↓
+```
+</details>
+
+<details>
+  <summary>List-Before-Checkbox</summary>
+
+- `list_before_box = false` (default):
+```
+foo
+↓ call `checkbox()`
+- [ ] foo
+↓
+- [x] foo
+↓
+- [ ] foo
+↓
+```
+
+- `list_before_box = true`:
+```
+foo
+↓ call `checkbox()`
+- foo
+↓
+- [ ] foo
+↓
+- [x] foo
+↓
+- foo
+↓
+```
+</details>
 
 ## Keymaps
 
@@ -134,139 +227,133 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 ```
 
-#### Dot-repeat
-If you set `enable_dot_repeat = true` (default):
+#### Toggle Functions
+Common keymap examples for toggle functions.
+<details>
+  <summary>Examples</summary>
+
+If `enable_dot_repeat = true` (default):
 ```lua
 opts.expr = true -- required for dot-repeat in Normal mode
 vim.keymap.set("n", "<C-q>", toggle.quote_dot, opts)
 vim.keymap.set("n", "<C-l>", toggle.list_dot, opts)
+vim.keymap.set("n", "<Leader><C-l>", toggle.list_cycle_dot, opts)
 vim.keymap.set("n", "<C-n>", toggle.olist_dot, opts)
-vim.keymap.set("n", "<Leader><C-x>", toggle.checkbox_dot, opts)
+vim.keymap.set("n", "<M-x>", toggle.checkbox_dot, opts)
+vim.keymap.set("n", "<Leader><M-x>", toggle.checkbox_cycle_dot, opts)
 vim.keymap.set("n", "<C-h>", toggle.heading_dot, opts)
 
 opts.expr = false -- required for Visual mode
 vim.keymap.set("x", "<C-q>", toggle.quote, opts)
 vim.keymap.set("x", "<C-l>", toggle.list, opts)
+vim.keymap.set("x", "<Leader><C-l>", toggle.list_cycle, opts)
 vim.keymap.set("x", "<C-n>", toggle.olist, opts)
-vim.keymap.set("x", "<Leader><C-x>", toggle.checkbox, opts)
+vim.keymap.set("x", "<M-x>", toggle.checkbox, opts)
+vim.keymap.set("x", "<Leader><M-x>", toggle.checkbox_cycle, opts)
 vim.keymap.set("x", "<C-h>", toggle.heading, opts)
 ```
 
-If you set `enable_dot_repeat = false`:
+If `enable_dot_repeat = false`:
 ```lua
 vim.keymap.set({ "n", "x" }, "<C-q>", toggle.quote, opts)
 vim.keymap.set({ "n", "x" }, "<C-l>", toggle.list, opts)
+vim.keymap.set({ "n", "x" }, "<Leader><C-l>", toggle.list_cycle, opts)
 vim.keymap.set({ "n", "x" }, "<C-n>", toggle.olist, opts)
-vim.keymap.set({ "n", "x" }, "<Leader><C-x>", toggle.checkbox, opts)
+vim.keymap.set({ "n", "x" }, "<M-x>", toggle.checkbox, opts)
+vim.keymap.set({ "n", "x" }, "<Leader><M-x>", toggle.checkbox_cycle, opts)
 vim.keymap.set({ "n", "x" }, "<C-h>", toggle.heading, opts)
 ```
+</details>
 
 #### Autolist
-If you set `enable_autolist = true` (default):
+<details>
+  <summary>Examples</summary>
+
+If `enable_autolist = true` (default):
 ```lua
 vim.keymap.set("n", "O", toggle.autolist_up, opts)
 vim.keymap.set("n", "o", toggle.autolist_down, opts)
 vim.keymap.set("i", "<CR>", toggle.autolist_cr, opts)
 ```
+</details>
 
 #### Config-switch
 You can switch various options in the comfort of your active buffer, without the need to restart or reload Neovim.
+<details>
+  <summary>Examples</summary>
+
 ```lua
 vim.keymap.set("n", "<Leader>mU", toggle.switch_unmarked_only, opts)
 vim.keymap.set("n", "<Leader>mB", toggle.switch_blankhead_skip, opts)
 vim.keymap.set("n", "<Leader>mI", toggle.switch_inner_indent, opts)
 vim.keymap.set("n", "<Leader>mS", toggle.switch_auto_samestate, opts)
-vim.keymap.set("n", "<Leader>mL", toggle.switch_list_cycle, opts)
-vim.keymap.set("n", "<Leader>mX", toggle.switch_box_cycle, opts)
+vim.keymap.set("n", "<Leader>mL", toggle.switch_cycle_list_table, opts)
+vim.keymap.set("n", "<Leader>mX", toggle.switch_cycle_box_table, opts)
+vim.keymap.set("n", "<Leader>mC", toggle.switch_list_before_box, opts)
 ```
+</details>
 
 ## API
+### API: Functions
 This plugin provides the following set of API functions:
 
 | type | function | vim-mode |
 | -- | -- | -- |
-| Quotes         | `quote()`        | Normal, Visual |
-|                | `quote_dot()`    | Normal         |
-| Lists          | `list()`         | Normal, Visual |
-|                | `list_dot()`     | Normal         |
-| Ordered Lists  | `olist()`        | Normal, Visual |
-|                | `olist_dot()`    | Normal         |
-| Checkboxes     | `checkbox()`     | Normal, Visual |
-|                | `checkbox_dot()` | Normal         |
-| Headings       | `heading()`      | Normal, Visual |
-|                | `heading_dot()`  | Normal         |
-| Autolist       | `autolist_up()`<br>`autolist_down()` | Normal |
-|                | `autolist_cr()`  | Insert         |
-| Config-switch  | `switch_unmarked_only()`<br>`switch_blankhead_skip()`<br>`switch_inner_indent()`<br>`switch_auto_samestate()`<br>`switch_list_cycle()`<br>`switch_box_cycle()`<br>`switch_mimic_obsidian_list()`<br>`switch_mimic_obsidian_cycle()` | Normal |
+| Quotes                | `quote()`             | Normal, Visual |
+| Lists                 | `list()`              | Normal, Visual |
+| Lists(cycle-only)     | `list_cycle()`        | Normal, Visual |
+| Ordered Lists         | `olist()`             | Normal, Visual |
+| Checkboxes            | `checkbox()`          | Normal, Visual |
+| Checkboxes(cycle-only)| `checkbox_cycle()`    | Normal, Visual |
+| Headings              | `heading()`           | Normal, Visual |
+| Dot-repeatable        | `XXX_dot()`           | Normal         |
+| Autolist              | `autolist_up()`<br>`autolist_down()` | Normal |
+|                       | `autolist_cr()`       | Insert         |
+| Config-switch         | `switch_unmarked_only()`<br>`switch_blankhead_skip()`<br>`switch_inner_indent()`<br>`switch_auto_samestate()`<br>`switch_cycle_list_table()`<br>`switch_cycle_box_table()`<br>`switch_list_before_box` | Normal |
 
-## Tips
+### API: Dot-repeatable
+Dot-repeatable functions have names like `XXX_dot()`.
 
-### Mimicking Obsidian
-If you don't want to mimic [Obsidian](https://obsidian.md)'s behavior, set `mimic_obsidian_list` and `mimic_obsidian_cycle` to `false` in your `init.lua` or config.
+For example:
+- Dot-repeatable function for block-quote is `quote_dot()`
+- Dot-repeatable function for checkbox is `checkbox_dot()`
 
-These options are set to `true` by default.
+### API: Cycle-only
+<details>
+  <summary>Cycle-only Functions</summary>
 
-API functions are available, allowing you to set keymaps for switching them.
-- `switch_mimic_obsidian_list()`
-- `switch_mimic_obsidian_cycle()`
+The **cycle-only** functions are like:
+- `list_cycle()`, `list_cycle_dot()`
+- `checkbox_cycle()`, `checkbox_cycle_dot()`
 
-#### `mimic_obsidian_list`
-- `mimic_obsidian_list = true`:
-```
-- [ ] foo
-↓ execute `list()`
-foo
-↓
-- foo
-↓
-foo
-↓
-```
+These funcs **only perform mark-cycling** every time you call them, regardless of whether `cycle_XXX_table` is `true` or not.
 
-- `mimic_obsidian_list = false`:
+So if you'd like to have TWO separate keymaps for both toggling and cycling functions, you no longer need to set or switch `cycle_XXX_table`:
+```lua
+-- list() performs toggling/cycling (can be switched with option)
+vim.keymap.set({ "n", "x" }, "<C-l>", toggle.list, opts)
+-- list_cycle() performs cycling only
+vim.keymap.set({ "n", "x" }, "<Leader><C-l>", toggle.list_cycle, opts)
 ```
-- [ ] foo
-↓ execute `list()`
-- foo
-↓
-foo
-↓
-- foo
-↓
-```
+</details>
 
-#### `mimic_obsidian_cycle`
-- `mimic_obsidian_cycle = true`:
-```
-foo
-↓ execute `checkbox()` with `enable_box_cycle = true`
-- foo
-↓
-- [ ] foo
-↓
-- [x] foo
-↓
-- [~] foo
-↓
-- foo
-↓
-- [ ] foo
-↓
-```
+## Etc
+### For Obsidian Users
+If you'd like this plugin to behave like Obsidian, take a look at this:
 
-- `mimic_obsidian_cycle = false`:
-```
-foo
-↓ execute `checkbox()` with `enable_box_cycle = true`
-- [ ] foo
-↓
-- [x] foo
-↓
-- [~] foo
-↓
-- [ ] foo
-↓
-```
+<details>
+  <summary>How to use like Obsidian</summary>
+
+| Obsidian commands | API | config |
+| :-- | :-- | :-- |
+| Toggle blockquote     | `quote()`, `quote_dot()`      | any |
+| Toggle bullet list    | `list()`, `list_dot()`        | any |
+| Toggle numbered list  | `olist()`, `olist_dot()`      | any |
+| Toggle checkbox status| `checkbox()`, `checkbox_dot()`| `list_before_box` is `false` |
+| Cycle bullet/checkbox | `checkbox()`, `checkbox_dot()`| `list_before_box` is `true`  |
+
+**NOTE**: `list_before_box` can be toggled with `switch_list_before_box()`.
+</details>
 
 ## Related Plugins
 - [markdowny.nvim](https://github.com/antonk52/markdowny.nvim)
@@ -281,12 +368,16 @@ foo
 - [markdown-togglecheck](https://github.com/nfrid/markdown-togglecheck)
 
 ## Todo
+**NOTE**: This is just a provisional plan.
+
 - [ ] Rename and consolidate options
     - Use more generic config names
-- [ ] Expand the README with config examples inspired by popular Markdown editors
 - [ ] Allow `quote()` to be used without whitespace at the beginning of a line
-- [ ] Implement recalculation of ordered lists
-- [ ] Improve Visual-mode behavior of `heading()` for lines that start with `#`
-- [ ] Implement plugin commands (e.g., `:MarkdownToggleQuote`) to call API functions
+- [ ] Recalculate ordered lists automatically
+- [ ] Implement various **autolist** behaviors triggered by consecutive `<CR>` presses
+- [ ] Enable `heading()` to directly replace list, olist, or checkbox items
+- [ ] Add an option to toggle `1.` inside headings like `### hoge` to `### 1. hoge`
+- [ ] Indent text in block quotes with `Tab`, changing `> hoge` to `> ____hoge`
+- [ ] Add plugin commands (e.g., `:MarkdownToggleQuote`) to call API functions
 - [ ] Integrate `v:count` (`vim.v.count`) support to handle repeated actions
-  - Example: `2<C-h>` should invoke the `heading()` function twice
+  - Example: `2<C-h>` should call the `heading()` function twice
