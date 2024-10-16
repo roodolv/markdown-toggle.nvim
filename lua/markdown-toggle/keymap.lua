@@ -20,13 +20,21 @@ M.set = function(config)
           n = { callback = toggle.list, desc = "MarkdownToggle List" },
           x = { callback = toggle.list, desc = "MarkdownToggle List" },
         },
+        ["<Leader><C-l>"] = {
+          n = { callback = toggle.list_cycle, desc = "MarkdownToggle List-Cycle" },
+          x = { callback = toggle.list_cycle, desc = "MarkdownToggle List-Cycle" },
+        },
         ["<C-n>"] = {
           n = { callback = toggle.olist, desc = "MarkdownToggle Ordered List" },
           x = { callback = toggle.olist, desc = "MarkdownToggle Ordered List" },
         },
-        ["<Leader><C-x>"] = {
+        ["<M-x>"] = {
           n = { callback = toggle.checkbox, desc = "MarkdownToggle Checkbox" },
           x = { callback = toggle.checkbox, desc = "MarkdownToggle Checkbox" },
+        },
+        ["<Leader><M-x>"] = {
+          n = { callback = toggle.checkbox_cycle, desc = "MarkdownToggle Checkbox-Cycle" },
+          x = { callback = toggle.checkbox_cycle, desc = "MarkdownToggle Checkbox-Cycle" },
         },
         ["<C-h>"] = {
           n = { callback = toggle.heading, desc = "MarkdownToggle Heading" },
@@ -45,20 +53,27 @@ M.set = function(config)
           n = { callback = toggle.switch_auto_samestate, desc = "MarkdownToggle Switch auto-samestate" },
         },
         ["<Leader>mL"] = {
-          n = { callback = toggle.switch_list_cycle, desc = "MarkdownToggle Switch list-cycle" },
+          n = { callback = toggle.switch_cycle_list_table, desc = "MarkdownToggle Switch cycle-list-table" },
         },
         ["<Leader>mX"] = {
-          n = { callback = toggle.switch_box_cycle, desc = "MarkdownToggle Switch box-cycle" },
+          n = { callback = toggle.switch_cycle_box_table, desc = "MarkdownToggle Switch cycle-box-table" },
+        },
+        ["<Leader>mC"] = {
+          n = { callback = toggle.switch_list_before_box, desc = "MarkdownToggle Switch list-before-box" },
         },
       }
 
       if config.enable_dot_repeat then
         keymaps["<C-q>"].n = { callback = toggle.quote_dot, expr = true, desc = "MarkdownToggle Quote Dot-repeat" }
         keymaps["<C-l>"].n = { callback = toggle.list_dot, expr = true, desc = "MarkdownToggle List Dot-repeat" }
+        keymaps["<Leader><C-l>"].n =
+          { callback = toggle.list_cycle_dot, expr = true, desc = "MarkdownToggle List-Cycle Dot-repeat" }
         keymaps["<C-n>"].n =
           { callback = toggle.olist_dot, expr = true, desc = "MarkdownToggle Ordered List Dot-repeat" }
-        keymaps["<Leader><C-x>"].n =
+        keymaps["<M-x>"].n =
           { callback = toggle.checkbox_dot, expr = true, desc = "MarkdownToggle Checkbox Dot-repeat" }
+        keymaps["<Leader><M-x>"].n =
+          { callback = toggle.checkbox_cycle_dot, expr = true, desc = "MarkdownToggle Checkbox-Cycle Dot-repeat" }
         keymaps["<C-h>"].n = { callback = toggle.heading_dot, expr = true, desc = "MarkdownToggle Heading Dot-repeat" }
       end
 

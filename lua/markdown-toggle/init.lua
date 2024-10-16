@@ -10,12 +10,14 @@ local keymap = require("markdown-toggle.keymap")
 
 ---@type MarkdownToggleConfig
 local current_config = config.set()
+local list_mark = current_config.list_table[1] and current_config.list_table[1] or "-"
 
 ---@param user_config MarkdownToggleConfig
 M.setup = function(user_config)
   current_config = config.set(user_config)
 
   if current_config.use_default_keymaps then keymap.set(current_config) end
+  if current_config.list_table[1] ~= list_mark then list_mark = current_config.list_table[1] end
 end
 
 ---@param option_name string
@@ -154,7 +156,7 @@ local cycled_box_state = function(line)
 end
 local cycle_box = function(line, mark)
   local state = cycled_box_state(line)
-  if state == "end" then return current_config.mimic_obsidian_cycle and box_to_list(line, mark) or uncheck_box(line) end
+  if state == "end" then return current_config.list_before_box and box_to_list(line, mark) or uncheck_box(line) end
   return (line:gsub("(%[)[ x~!>](%])", "%1" .. state .. "%2", 1))
 end
 
@@ -209,16 +211,30 @@ end
 local get_toggled_list = function(line)
   if has_heading(line) then return line end
 
-  local mark = current_config.list_table[1] and current_config.list_table[1] or "-"
+  if has_box(line) then
+    return box_to_list(line, list_mark)
+  elseif has_list(line) then
+    return current_config.cycle_list_table and cycle_list(line) or remove_list(line)
+  elseif has_olist(line) then
+    return olist_to_list(line, list_mark)
+  else
+    return create_list(line, list_mark)
+  end
+end
+
+--- @param line string
+--- @return string
+local get_cycled_list = function(line)
+  if has_heading(line) then return line end
 
   if has_box(line) then
-    return current_config.mimic_obsidian_list and remove_box(line) or box_to_list(line, mark)
+    return box_to_list(line, list_mark)
   elseif has_list(line) then
-    return current_config.enable_list_cycle and cycle_list(line) or remove_list(line)
+    return cycle_list(line)
   elseif has_olist(line) then
-    return olist_to_list(line, mark)
+    return olist_to_list(line, list_mark)
   else
-    return create_list(line, mark)
+    return create_list(line, list_mark)
   end
 end
 
@@ -244,28 +260,44 @@ local get_toggled_box = function(line)
   if has_heading(line) then return line end
 
   local _, _, state = matched_box(line)
-  local mark = current_config.list_table[1] and current_config.list_table[1] or "-"
 
   if state == " " then
-    return current_config.enable_box_cycle and cycle_box(line, mark) or check_box(line)
+    return check_box(line)
   elseif state ~= nil then
-    return current_config.enable_box_cycle and cycle_box(line, mark) or uncheck_box(line)
+    return current_config.list_before_box and box_to_list(line, list_mark) or uncheck_box(line)
   elseif has_list(line) then
-    return list_to_box(line, mark)
+    return list_to_box(line, list_mark)
   elseif has_olist(line) then
-    return olist_to_box(line, mark)
+    return olist_to_box(line, list_mark)
   else
-    -- On the Obsidian-cycle-mode, at first this plugin toggle the bullet-list, and then toggle the checkbox.
-    return (current_config.enable_box_cycle and current_config.mimic_obsidian_cycle) and create_list(line, mark)
-      -- By default, the checkbox is toggled first.
-      or create_box(line, mark)
+    -- If `list_before_box` is true, a bullet list is toggled first.
+    return current_config.list_before_box and create_list(line, list_mark) or create_box(line, list_mark)
+  end
+end
+
+--- @param line string
+--- @return string
+local get_cycled_box = function(line)
+  if has_heading(line) then return line end
+
+  local _, _, state = matched_box(line)
+
+  if state ~= nil then
+    return cycle_box(line, list_mark)
+  elseif has_list(line) then
+    return list_to_box(line, list_mark)
+  elseif has_olist(line) then
+    return olist_to_box(line, list_mark)
+  else
+    -- If `list_before_box` is true, a bullet list is toggled first.
+    return current_config.list_before_box and create_list(line, list_mark) or create_box(line, list_mark)
   end
 end
 
 --[========================================================[
                         Toggle Lines
 --]========================================================]
---- @alias ToggleMode "quote" | "list" | "olist" | "checkbox" | "heading"
+--- @alias ToggleMode "quote" | "list" | "list_cycle" | "olist" | "checkbox" | "checkbox_cycle" | "heading"
 
 --- @param toggle_mode ToggleMode
 --- @param line string
@@ -281,9 +313,13 @@ local get_toggled_line = function(toggle_mode, line)
 
   -- Toggle marks
   if toggle_mode == "checkbox" then
-    new_line = get_toggled_box(body)
+    new_line = current_config.cycle_box_table and get_cycled_box(body) or get_toggled_box(body)
+  elseif toggle_mode == "checkbox_cycle" then
+    new_line = get_cycled_box(body)
   elseif toggle_mode == "list" then
-    new_line = get_toggled_list(body)
+    new_line = current_config.cycle_list_table and get_cycled_list(body) or get_toggled_list(body)
+  elseif toggle_mode == "list_cycle" then
+    new_line = get_cycled_list(body)
   elseif toggle_mode == "olist" then
     new_line = get_toggled_olist(body)
   elseif toggle_mode == "heading" then
@@ -330,10 +366,12 @@ local toggle_unmarked_lines = function(toggle_mode)
   local new_lines = lines
   local is_toggled = false
 
-  -- 1st loop: Toggle only unmarked lines
+  -- 1st block: Toggle only unmarked lines
   for i, line in ipairs(lines) do
     repeat
       -- REVIEW: This condition may need to be split
+      -- quote() always toggles blank lines even if blankhead_skip is true
+      -- Some may want to skip blanklines even using quote()
       if toggle_mode ~= "quote" and skip_blank_and_heading(line) then break end
       if toggle_mode ~= "quote" and is_marked(line) then break end
       if toggle_mode == "quote" and has_quote(line) then break end
@@ -343,7 +381,7 @@ local toggle_unmarked_lines = function(toggle_mode)
     until true
   end
 
-  -- 2nd loop: If the toggled flag isn't set, toggle all lines
+  -- 2nd block: If the toggled flag isn't set, toggle all lines
   if is_toggled == false then
     toggle_all_lines(toggle_mode)
     return
@@ -426,7 +464,7 @@ local setup_toggle_functions = function(toggle_mode)
 end
 
 -- Toggle Functions
-local toggle_modes = { "quote", "list", "olist", "checkbox", "heading" }
+local toggle_modes = { "quote", "list", "list_cycle", "olist", "checkbox", "checkbox_cycle", "heading" }
 for _, toggle_mode in ipairs(toggle_modes) do
   setup_toggle_functions(toggle_mode)
 end
@@ -437,14 +475,13 @@ M.autolist_down = function() autolist("o") end
 M.autolist_cr = function() autolist(util.get_eol()) end
 
 -- Config-switch
-M.switch_unmarked_only = function() switch_option("enable_unmarked_only") end
 M.switch_blankhead_skip = function() switch_option("enable_blankhead_skip") end
 M.switch_inner_indent = function() switch_option("enable_inner_indent") end
+M.switch_unmarked_only = function() switch_option("enable_unmarked_only") end
 M.switch_auto_samestate = function() switch_option("enable_auto_samestate") end
-M.switch_list_cycle = function() switch_option("enable_list_cycle") end
-M.switch_box_cycle = function() switch_option("enable_box_cycle") end
 
-M.switch_mimic_obsidian_list = function() switch_option("mimic_obsidian_list") end
-M.switch_mimic_obsidian_cycle = function() switch_option("mimic_obsidian_cycle") end
+M.switch_cycle_list_table = function() switch_option("cycle_list_table") end
+M.switch_cycle_box_table = function() switch_option("cycle_box_table") end
+M.switch_list_before_box = function() switch_option("list_before_box") end
 
 return M

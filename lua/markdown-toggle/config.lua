@@ -3,10 +3,11 @@ local M = {}
 ---@class MarkdownToggleConfig
 ---@field use_default_keymaps boolean
 ---@field filetypes string[]
----@field enable_list_cycle boolean
 ---@field list_table string[]
----@field enable_box_cycle boolean
+---@field cycle_list_table boolean
 ---@field box_table string[]
+---@field cycle_box_table boolean
+---@field list_before_box boolean
 ---@field heading_table string[]
 ---@field enable_blankhead_skip boolean
 ---@field enable_inner_indent boolean
@@ -14,8 +15,6 @@ local M = {}
 ---@field enable_autolist boolean
 ---@field enable_auto_samestate boolean
 ---@field enable_dot_repeat boolean
----@field mimic_obsidian_list boolean
----@field mimic_obsidian_cycle boolean
 
 ---@type MarkdownToggleConfig
 local config = {
@@ -24,20 +23,17 @@ local config = {
   -- The keymaps are valid only for these filetypes
   filetypes = { "markdown", "markdown.mdx" },
 
-  -- Cycle the marks in user-defined table when toggling lists
-  enable_list_cycle = false,
   -- The list marks table used in cycle-mode (list_table[1] is used as the default list-mark)
   list_table = { "-", "+", "*", "=" },
+  -- Cycle the marks in user-defined table when toggling lists
+  cycle_list_table = false,
 
-  -- Cycle the marks in user-defined table when toggling checkboxes
-  enable_box_cycle = false,
   -- The checkbox marks table used in cycle-mode (box_table[1] is used as the default checked-state)
   box_table = { "x", "~", "!", ">" },
-
-  -- Mimic the behavior of Obsidian's "Toggle bullet list" on `list()`
-  mimic_obsidian_list = true,
-  -- Mimic the behavior of Obsidian's "Cycle bullet/checkbox" on `checkbox()`
-  mimic_obsidian_cycle = true,
+  -- Cycle the marks in user-defined table when toggling checkboxes
+  cycle_box_table = false,
+  -- A bullet list is toggled before turning into a checkbox (similar to how it works in Obsidian).
+  list_before_box = false,
 
   -- The heading marks table used in `markdown-toggle.heading`
   heading_table = { "#", "##", "###", "####", "#####" },
