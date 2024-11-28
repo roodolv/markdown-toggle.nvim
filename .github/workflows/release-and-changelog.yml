@@ -1,0 +1,29 @@
+name: "Generating Release and Changelog"
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  release-and-changelog:
+    # Triggered only when PRs are merged and labeled with `semver-XX`
+    if: |
+      github.event.pull_request.merged == true &&
+      (contains(github.event.pull_request.labels.*.name, 'semver-major') ||
+       contains(github.event.pull_request.labels.*.name, 'semver-minor') ||
+       contains(github.event.pull_request.labels.*.name, 'semver-patch'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: roodolv/release-and-changelog@v1
+        env:
+          TZ: "Asia/Tokyo"
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

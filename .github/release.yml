@@ -19,6 +19,6 @@ changelog:
     - title: Hot Fixes
       labels:
         - hotfix
-    - title: Other Changes
-      labels:
-        - "*"
+    # - title: Other Changes
+    #   labels:
+    #     - "*"
