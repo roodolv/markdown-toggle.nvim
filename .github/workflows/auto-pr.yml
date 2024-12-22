@@ -1,0 +1,109 @@
+name: "Automatically creating PR"
+
+on:
+  push:
+    branches:
+      - "feat/**"
+      - "feature/**"
+      - "fix/**"
+      - "hotfix/**"
+      - "hot-fix/**"
+      - "patch/**"
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_workflow: ${{ steps.set_skip.outputs.skip }}
+    permissions:
+      pull-requests: write
+      contents: read
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      AUTHOR: ${{ github.event.pusher.name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if PR exists
+        id: set_skip
+        run: |
+          pr_count=$(gh pr list \
+            --repo "${{ github.repository }}" \
+            --head "${{ github.ref_name }}" \
+            --json title \
+            --jq "length")
+          if [ $pr_count -gt 0 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create PR
+        if: steps.set_skip.outputs.skip != 'true'
+        run: |
+          gh pr create \
+            --title "$(git log -1 --oneline --pretty=format:'%s')" \
+            --body "" \
+            --assignee $AUTHOR
+
+      - name: Mark workflow as skipped
+        if: steps.set_skip.outputs.skip == 'true'
+        run: |
+          echo "This workflow was intentionally skipped."
+          exit 0
+
+  auto-pr-labeling:
+    needs: create-pr
+    if: needs.create-pr.outputs.skip_workflow != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get label name
+        id: label_name
+        run: |
+          branch_type=$(echo ${{ github.ref_name }} | cut -d "/" -f1)
+          if [ $branch_type == 'feature' ]; then
+            label_name="feature"
+          elif [ $branch_type == 'feat' ]; then
+            label_name="feature"
+          elif [ $branch_type == 'fix' ]; then
+            label_name="bug"
+          elif [ $branch_type == 'hotfix' ]; then
+            label_name="hotfix"
+          elif [ $branch_type == 'hot-fix' ]; then
+            label_name="hotfix"
+          else
+            label_name=""
+          fi
+          echo "label_name=$label_name" >> $GITHUB_OUTPUT
+
+      - name: Get the latest PR number
+        id: pr_number
+        if: ${{ steps.label_name.outputs.label_name != '' }}
+        run: |
+          for i in {1..3}; do
+            sleep 5
+            pr_number=$(gh pr list --repo "${{ github.repository }}" --limit 1 --json number --jq '.[0].number')
+            if [ -n "$pr_number" ]; then
+              echo "pr_number=$pr_number" >> $GITHUB_OUTPUT
+              break
+            fi
+            echo "Retrying to fetch PR number... ($i times)"
+          done
+
+      - name: Auto labeling
+        if: ${{ steps.label_name.outputs.label_name != '' }}
+        run: |
+          curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ steps.pr_number.outputs.pr_number }}/labels" \
+            -d "{\"labels\":[\"${{ steps.label_name.outputs.label_name }}\"]}"
