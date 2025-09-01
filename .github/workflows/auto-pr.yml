@@ -5,6 +5,8 @@ on:
     branches:
       - "feat/**"
       - "feature/**"
+      - "improve/**"
+      - "improvement/**"
       - "fix/**"
       - "hotfix/**"
       - "hot-fix/**"
@@ -74,6 +76,10 @@ jobs:
             label_name="feature"
           elif [ $branch_type == 'feat' ]; then
             label_name="feature"
+          elif [ $branch_type == 'improve' ]; then
+            label_name="improvement"
+          elif [ $branch_type == 'improvement' ]; then
+            label_name="improvement"
           elif [ $branch_type == 'fix' ]; then
             label_name="bug"
           elif [ $branch_type == 'hotfix' ]; then

@@ -13,6 +13,9 @@ changelog:
       labels:
         - enhancement
         - feature
+    - title: Improvements
+      labels:
+        - improvement
     - title: Bug Fixes
       labels:
         - bug
