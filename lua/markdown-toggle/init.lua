@@ -168,6 +168,7 @@ local is_blankline = function(line) return line:match("^$") ~= nil end
 local skip_blank_and_heading = function(line)
   return current_config.enable_blankhead_skip and (is_blankline(line) or has_heading(line))
 end
+local skip_blank = function(line) return current_config.enable_blankhead_skip and is_blankline(line) end
 local is_marked = function(line)
   -- Separate a head-of-line quote mark from the rest(body)
   local body = has_quote(line) and separate_quote(line).body or line
@@ -350,7 +351,8 @@ local toggle_all_lines = function(toggle_mode)
 
   for i, line in ipairs(lines) do
     repeat
-      if toggle_mode ~= "quote" and skip_blank_and_heading(line) then break end
+      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and skip_blank_and_heading(line) then break end
+      if toggle_mode == "heading" and skip_blank(line) then break end
 
       new_lines[i] = get_toggled_line(toggle_mode, line)
     until true
@@ -369,9 +371,6 @@ local toggle_unmarked_lines = function(toggle_mode)
   -- 1st block: Toggle only unmarked lines
   for i, line in ipairs(lines) do
     repeat
-      -- REVIEW: This condition may need to be split
-      -- quote() always toggles blank lines even if blankhead_skip is true
-      -- Some may want to skip blanklines even using quote()
       if toggle_mode ~= "quote" and skip_blank_and_heading(line) then break end
       if toggle_mode ~= "quote" and is_marked(line) then break end
       if toggle_mode == "quote" and has_quote(line) then break end
