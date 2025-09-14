@@ -37,11 +37,11 @@ local has_quote = function(line) return line:match("^%s*>%s.*$") ~= nil end
 local create_quote = function(line) return (line:gsub("^(.*)$", "> %1")) end
 local remove_quote = function(line) return (line:gsub(">%s", "", 1)) end
 local separate_quote = function(line)
-  local hol, body = line:match("^(%s*>%s)(.*)$")
-  if hol == nil then
-    hol, body = "", line
+  local whitespace, mark, body = line:match("^(%s*)(>%s*)(.*)$")
+  if mark == nil then
+    whitespace, mark, body = "", "", line
   end
-  return { hol = hol, body = body }
+  return { whitespace = whitespace, mark = mark, body = body }
 end
 
 --[========================================================[
@@ -163,7 +163,9 @@ end
 --[========================================================[
                          Line State
 --]========================================================]
-local matched_indent = function(line) return line:match("^(%s*).*$") end
+local matched_bol = function(line) return line:match("^(%s*).*$") end
+local matched_body = function(line) return line:match("^%s*(.*)$") end
+local matched_bol_body = function(line) return line:match("^(%s*)(.*)$") end
 local is_blankline = function(line) return line:match("^$") ~= nil end
 local skip_blank_and_heading = function(line)
   return current_config.enable_blankhead_skip and (is_blankline(line) or has_heading(line))
@@ -309,28 +311,27 @@ local get_toggled_line = function(toggle_mode, line)
 
   local new_line
   -- Separate a head-of-line quote mark from the rest(body)
-  local separated = separate_quote(line)
-  local hol, body = separated.hol, separated.body
+  local sep_quote = separate_quote(line)
 
   -- Toggle marks
   if toggle_mode == "checkbox" then
-    new_line = current_config.cycle_box_table and get_cycled_box(body) or get_toggled_box(body)
+    new_line = current_config.cycle_box_table and get_cycled_box(sep_quote.body) or get_toggled_box(sep_quote.body)
   elseif toggle_mode == "checkbox_cycle" then
-    new_line = get_cycled_box(body)
+    new_line = get_cycled_box(sep_quote.body)
   elseif toggle_mode == "list" then
-    new_line = current_config.cycle_list_table and get_cycled_list(body) or get_toggled_list(body)
+    new_line = current_config.cycle_list_table and get_cycled_list(sep_quote.body) or get_toggled_list(sep_quote.body)
   elseif toggle_mode == "list_cycle" then
-    new_line = get_cycled_list(body)
+    new_line = get_cycled_list(sep_quote.body)
   elseif toggle_mode == "olist" then
-    new_line = get_toggled_olist(body)
+    new_line = get_toggled_olist(sep_quote.body)
   elseif toggle_mode == "heading" then
-    new_line = get_toggled_heading(body)
+    new_line = get_toggled_heading(sep_quote.body)
   else
     error("Invalid toggle mode")
   end
 
-  -- Combine quote mark with the rest(body)
-  if has_quote(line) then new_line = hol .. new_line end
+  -- Combine a quote mark with the rest(sep_quote.body)
+  if has_quote(line) then new_line = sep_quote.whitespace .. sep_quote.mark .. new_line end
 
   return new_line
 end
@@ -409,44 +410,50 @@ end
 --]========================================================]
 ---@param cin string character input
 local autolist = function(cin)
-  local row = vim.api.nvim_win_get_cursor(0)[1]
-  local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
+  local line = vim.api.nvim_get_current_line()
 
-  local separated = separate_quote(line)
-  local quote, body = separated.hol, separated.body
+  -- TODO: Support only indent smaller than 3 spaces when toggling (maybe no relevant to this block?)
+  -- local indent = line:match("^(%s{,3})")
 
-  -- If quote mark exists, the rest of the line is passed as a whole-line
-  if quote ~= nil then line = body end
+  -- Detect beginning-of-line(bol) whitespaces and quote marks
+  local bol, body = matched_bol_body(line)
+  local sep_quote = separate_quote(body)
 
-  local hol_box, mark, state = matched_box(line)
-  local box = state ~= nil and string.format("%s [%s] ", mark, state) or nil
-  local hol_list, list = matched_list(line)
-  local hol_olist, olist = matched_olist(line) -- ordered-list
-  local hol
+  -- New beginning-of-line
+  local new_bol = ""
 
-  -- Replace nil with empty string
-  quote = quote and quote or ""
-  hol_box = hol_box and hol_box or ""
-  hol_list = hol_list and hol_list or ""
-  hol_olist = hol_olist and hol_olist or ""
+  -- NOTE: If you'd like good experience, please set `autoindent = false` or `noautoindent` for markdown files.
+  if vim.o.autoindent == false then
+    if bol ~= "" and bol ~= nil then new_bol = bol end
+  end
 
-  -- OPTIMIZE: May need faster logic
+  if sep_quote.mark ~= "" and sep_quote.mark ~= nil then new_bol = new_bol .. sep_quote.mark end
+
+  -- If a quote mark exists, the rest of the line is passed as a target
+  local target_line = sep_quote.mark and sep_quote.body or body
+
+  local _, box_mark, box_state = matched_box(target_line)
+  local box = box_state ~= nil and string.format("%s [%s] ", box_mark, box_state) or nil
+  local _, list = matched_list(target_line)
+  local _, olist = matched_olist(target_line)
+
+  -- stylua: ignore
   if box ~= nil then
-    if not current_config.enable_auto_samestate then box = string.format("%s %s ", mark, empty_box_str) end
-    hol = quote ~= "" and quote .. hol_box or quote
-    vim.api.nvim_feedkeys(cin .. hol .. box, "n", false)
+    if not current_config.enable_auto_samestate then
+      box = string.format("%s %s ", box_mark, empty_box_str)
+    end
+    vim.api.nvim_feedkeys(cin .. new_bol .. box, "n", false)
   elseif list ~= nil then
-    hol = quote ~= "" and quote .. hol_list or quote
-    vim.api.nvim_feedkeys(cin .. hol .. list .. " ", "n", false)
+    vim.api.nvim_feedkeys(cin .. new_bol .. list .. " ", "n", false)
   elseif olist ~= nil then
     olist = (cin == "O") and decrement_olist(olist) or increment_olist(olist)
-    hol = quote ~= "" and quote .. hol_olist or quote
-    vim.api.nvim_feedkeys(cin .. hol .. olist .. " ", "n", false)
-  elseif quote ~= "" then
-    hol = current_config.enable_inner_indent and matched_indent(body) or ""
-    vim.api.nvim_feedkeys(cin .. quote .. hol, "n", false)
+    vim.api.nvim_feedkeys(cin .. new_bol .. olist .. " ", "n", false)
+  elseif sep_quote.mark ~= "" and sep_quote.mark ~= nil then
+    -- In the case of quote-only
+    local inner_indent = current_config.enable_inner_indent and matched_bol(sep_quote.body) or ""
+    vim.api.nvim_feedkeys(cin .. new_bol .. inner_indent, "n", false)
   else
-    vim.api.nvim_feedkeys(cin, "n", false)
+    vim.api.nvim_feedkeys(cin, "n", false) -- As usual
   end
 end
 
