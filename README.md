@@ -355,6 +355,28 @@ If you'd like this plugin to behave like Obsidian, take a look at this:
 **NOTE**: `list_before_box` can be toggled with `switch_list_before_box()`.
 </details>
 
+### Autolist Configs
+If you'd like a good experience, you should set `autoindent = false` or `noautoindent` for Markdown buffers.
+
+<details>
+  <summary>Here is an example:</summary>
+
+  ```lua
+  vim.o.autoindent = true
+  ```
+
+  or
+
+  ```lua
+  vim.api.nvim_create_autocmd({ "FileType" }, {
+    pattern = "markdown",
+    command = "setl expandtab tabstop=4 shiftwidth=4 softtabstop=4 noautoindent",
+  })
+  ```
+
+**NOTE**: You can freely set the values for `tabstop`, `shiftwidth` and `softtabstop`.
+</details>
+
 ## Related Plugins
 - [markdowny.nvim](https://github.com/antonk52/markdowny.nvim)
   - If you want to easily apply or toggle **code, codeblock, link, bold, or italic** formatting on Markdown text, this may be ideal for you.
@@ -372,7 +394,6 @@ If you'd like this plugin to behave like Obsidian, take a look at this:
 
 - [ ] Rename and consolidate options
     - Use more generic config names
-- [ ] Allow `quote()` to be used without whitespace at the beginning of a line
 - [ ] Recalculate ordered lists automatically
 - [ ] Implement various **autolist** behaviors triggered by consecutive `<CR>` presses
 - [ ] Enable `heading()` to directly replace list, olist, or checkbox items
