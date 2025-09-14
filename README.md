@@ -362,12 +362,14 @@ If you'd like a good experience, you should set `autoindent = false` or `noautoi
   <summary>Here is an example:</summary>
 
   ```lua
-  vim.o.autoindent = true
+  vim.o.autoindent = false
   ```
 
   or
 
   ```lua
+  vim.o.autoindent = true
+
   vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = "markdown",
     command = "setl expandtab tabstop=4 shiftwidth=4 softtabstop=4 noautoindent",
