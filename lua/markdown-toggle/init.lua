@@ -112,13 +112,13 @@ local box_to_olist = function(line) return (line:gsub("^(%s*)[%-%+%*%=]%s%[[ x~!
 ---@return string
 local increment_olist = function(olist_mark)
   local num = tonumber(olist_mark)
-  return string.format("%d.", num + 1)
+  return string.format("%d. ", num + 1)
 end
 ---@param olist_mark string 1, 2, 3, ...
 ---@return string
 local decrement_olist = function(olist_mark)
   local num = tonumber(olist_mark)
-  return string.format("%d.", num - 1)
+  return string.format("%d. ", num - 1)
 end
 
 --[========================================================[
@@ -447,7 +447,7 @@ local autolist = function(cin)
     vim.api.nvim_feedkeys(cin .. new_bol .. list .. " ", "n", false)
   elseif olist ~= nil then
     olist = (cin == "O") and decrement_olist(olist) or increment_olist(olist)
-    vim.api.nvim_feedkeys(cin .. new_bol .. olist .. " ", "n", false)
+    vim.api.nvim_feedkeys(cin .. new_bol .. olist, "n", false)
   elseif sep_quote.mark ~= "" and sep_quote.mark ~= nil then
     -- In the case of quote-only
     local inner_indent = current_config.enable_inner_indent and matched_bol(sep_quote.body) or ""
