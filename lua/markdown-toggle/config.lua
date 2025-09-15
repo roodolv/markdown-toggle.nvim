@@ -10,7 +10,6 @@ local M = {}
 ---@field list_before_box boolean
 ---@field heading_table string[]
 ---@field enable_blankhead_skip boolean
----@field enable_inner_indent boolean
 ---@field enable_unmarked_only boolean
 ---@field enable_autolist boolean
 ---@field enable_auto_samestate boolean
@@ -40,8 +39,6 @@ local config = {
 
   -- Skip blank lines and headings in Visual mode (except for `quote()`)
   enable_blankhead_skip = true,
-  -- Insert an indent for new lines within quoted text
-  enable_inner_indent = false,
   -- Toggle only unmarked lines first
   enable_unmarked_only = true,
   -- Automatically continue lists on new lines

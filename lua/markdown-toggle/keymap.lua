@@ -46,9 +46,6 @@ M.set = function(config)
         ["<Leader>mB"] = {
           n = { callback = toggle.switch_blankhead_skip, desc = "MarkdownToggle Switch blankhead-skip" },
         },
-        ["<Leader>mI"] = {
-          n = { callback = toggle.switch_inner_indent, desc = "MarkdownToggle Switch inner-indent" },
-        },
         ["<Leader>mS"] = {
           n = { callback = toggle.switch_auto_samestate, desc = "MarkdownToggle Switch auto-samestate" },
         },
