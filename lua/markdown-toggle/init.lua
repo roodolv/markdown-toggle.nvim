@@ -427,7 +427,8 @@ local autolist = function(cin)
     if bol ~= "" and bol ~= nil then new_bol = bol end
   end
 
-  if sep_quote.mark ~= "" and sep_quote.mark ~= nil then new_bol = new_bol .. sep_quote.mark end
+  -- If a quote mark exists, combine the quote mark with the bol spaces
+  if sep_quote.mark then new_bol = new_bol .. sep_quote.mark end
 
   -- If a quote mark exists, the rest of the line is passed as a target
   local target_line = sep_quote.mark and sep_quote.body or body
@@ -444,11 +445,12 @@ local autolist = function(cin)
     end
     vim.api.nvim_feedkeys(cin .. new_bol .. box, "n", false)
   elseif list ~= nil then
-    vim.api.nvim_feedkeys(cin .. new_bol .. list .. " ", "n", false)
+    list = list .. " "
+    vim.api.nvim_feedkeys(cin .. new_bol .. list, "n", false)
   elseif olist ~= nil then
     olist = (cin == "O") and decrement_olist(olist) or increment_olist(olist)
     vim.api.nvim_feedkeys(cin .. new_bol .. olist, "n", false)
-  elseif sep_quote.mark ~= "" and sep_quote.mark ~= nil then
+  elseif sep_quote.mark then
     -- In the case of quote-only
     local inner_indent = current_config.enable_inner_indent and matched_bol(sep_quote.body) or ""
     vim.api.nvim_feedkeys(cin .. new_bol .. inner_indent, "n", false)
