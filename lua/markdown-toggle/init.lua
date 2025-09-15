@@ -452,8 +452,7 @@ local autolist = function(cin)
     vim.api.nvim_feedkeys(cin .. new_bol .. olist, "n", false)
   elseif sep_quote.mark then
     -- In the case of quote-only
-    local inner_indent = current_config.enable_inner_indent and matched_bol(sep_quote.body) or ""
-    vim.api.nvim_feedkeys(cin .. new_bol .. inner_indent, "n", false)
+    vim.api.nvim_feedkeys(cin .. new_bol, "n", false)
   else
     vim.api.nvim_feedkeys(cin, "n", false) -- As usual
   end
@@ -484,7 +483,6 @@ M.autolist_cr = function() autolist(util.get_eol()) end
 
 -- Config-switch
 M.switch_blankhead_skip = function() switch_option("enable_blankhead_skip") end
-M.switch_inner_indent = function() switch_option("enable_inner_indent") end
 M.switch_unmarked_only = function() switch_option("enable_unmarked_only") end
 M.switch_auto_samestate = function() switch_option("enable_auto_samestate") end
 
