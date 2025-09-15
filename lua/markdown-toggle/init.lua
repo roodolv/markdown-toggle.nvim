@@ -172,9 +172,7 @@ end
 local skip_blank = function(line) return current_config.enable_blankhead_skip and is_blankline(line) end
 local is_marked = function(line)
   -- Separate a head-of-line quote mark from the rest(body)
-  -- PERF: It may be directly replaced by the following:
-  -- local body = separate_quote(line).body or line
-  local body = has_quote(line) and separate_quote(line).body or line
+  local body = separate_quote(line).body or line
 
   -- Check if already marked
   return has_box(line)
