@@ -124,8 +124,7 @@ end
 --[========================================================[
                          Checkboxes
 --]========================================================]
-local empty_box_str = "[ ]"
-
+local empty_box = function() return "[ ]" end
 -- NOTE: This regex matches:
 -- group1(mark): "-", "+", "*", "="
 -- group2(state): " ", "x", "~", "!", ">"
@@ -134,16 +133,16 @@ local has_box = function(line) return matched_box(line) ~= nil end
 local check_box = function(line)
   return (line:gsub("([%-%+%*%=]%s)%[ %]", "%1[" .. current_config.box_table[1] .. "]", 1))
 end
-local uncheck_box = function(line) return (line:gsub("([%-%+%*%=]%s)%[[x~!>]%]", "%1" .. empty_box_str, 1)) end
+local uncheck_box = function(line) return (line:gsub("([%-%+%*%=]%s)%[[x~!>]%]", "%1" .. empty_box(), 1)) end
 local create_box = function(line, mark)
-  return (line:gsub("^(%s*)(.*)", "%1" .. string.format("%s %s ", mark, empty_box_str) .. "%2"))
+  return (line:gsub("^(%s*)(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
 end
 local remove_box = function(line) return line:gsub("(%s*)[%-%+%*%=]%s%[[ x~!>]%]%s", "%1", 1) end
 local list_to_box = function(line, mark)
-  return (line:gsub("^(%s*)[%-%+%*%=]%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box_str) .. "%2"))
+  return (line:gsub("^(%s*)[%-%+%*%=]%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
 end
 local olist_to_box = function(line, mark)
-  return (line:gsub("^(%s*)%d+%.%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box_str) .. "%2"))
+  return (line:gsub("^(%s*)%d+%.%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
 end
 local cycled_box_state = function(line)
   local states = current_config.box_table
@@ -173,6 +172,8 @@ end
 local skip_blank = function(line) return current_config.enable_blankhead_skip and is_blankline(line) end
 local is_marked = function(line)
   -- Separate a head-of-line quote mark from the rest(body)
+  -- PERF: It may be directly replaced by the following:
+  -- local body = separate_quote(line).body or line
   local body = has_quote(line) and separate_quote(line).body or line
 
   -- Check if already marked
@@ -441,7 +442,7 @@ local autolist = function(cin)
   -- stylua: ignore
   if box ~= nil then
     if not current_config.enable_auto_samestate then
-      box = string.format("%s %s ", box_mark, empty_box_str)
+      box = string.format("%s %s ", box_mark, empty_box())
     end
     vim.api.nvim_feedkeys(cin .. new_bol .. box, "n", false)
   elseif list ~= nil then
