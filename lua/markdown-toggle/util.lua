@@ -20,4 +20,18 @@ M.get_eol = function()
   end
 end
 
+-- NOTE: How to use:
+-- local timestamp = util.echo_exec_time() -- Start
+-- util.echo_exec_time(timestamp) -- End
+
+---@param timestamp integer|nil
+M.echo_exec_time = function(timestamp)
+  if not timestamp then
+    return vim.loop.hrtime() -- Return start timestamp(nanoseconds)
+  end
+
+  local elapsed_ns = vim.loop.hrtime() - timestamp
+  vim.api.nvim_echo({ { ("Elapsed: %.6f ms"):format(elapsed_ns / 1e6), "None" } }, true, {})
+end
+
 return M
