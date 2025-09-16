@@ -33,11 +33,11 @@ end
 --[========================================================[
                            Quotes
 --]========================================================]
-local has_quote = function(line) return line:match("^%s*>%s.*$") ~= nil end
+local has_quote = function(line) return line:match("^%s?%s?%s?>%s?.*$") ~= nil end
 local create_quote = function(line) return (line:gsub("^(.*)$", "> %1")) end
-local remove_quote = function(line) return (line:gsub(">%s", "", 1)) end
+local remove_quote = function(line) return (line:gsub("^(%s?%s?%s?)>%s?", "", 1)) end
 local separate_quote = function(line)
-  local whitespace, mark, body = line:match("^(%s*)(>%s*)(.*)$")
+  local whitespace, mark, body = line:match("^(%s?%s?%s?)(>%s?)(.*)$")
   if mark == nil then
     whitespace, mark, body = "", "", line
   end
@@ -47,10 +47,9 @@ end
 --[========================================================[
                           Headings
 --]========================================================]
--- NOTE: This regex matches: "#", "##", ...
-local matched_heading = function(line) return line:match("^%s*(#+)%s") end
+local matched_heading = function(line) return line:match("^[%s>]*(#+)%s") end
 local has_heading = function(line) return matched_heading(line) ~= nil end
-local create_heading = function(line, mark) return (line:gsub("^(%s*)(.*)$", "%1" .. mark .. " %2")) end
+local create_heading = function(line, mark) return (line:gsub("^([%s>]*)(.*)$", "%1" .. mark .. " %2")) end
 local remove_heading = function(line) return line:gsub("#+%s", "", 1) end
 
 local cycled_heading_mark = function(line)
@@ -73,14 +72,14 @@ end
                             Lists
 --]========================================================]
 -- NOTE: This regex matches: "-", "+", "*", "="
-local matched_list = function(line) return line:match("^(%s*)([%-%+%*%=])%s.*$") end
+local matched_list = function(line) return line:match("^([%s>]*)([%-%+%*%=])%s.*$") end
 local has_list = function(line) return matched_list(line) ~= nil end
-local create_list = function(line, mark) return (line:gsub("^(%s*)(.*)", "%1" .. mark .. " %2")) end
+local create_list = function(line, mark) return (line:gsub("^([%s>]*)(.*)", "%1" .. mark .. " %2")) end
 local remove_list = function(line) return (line:gsub("[%-%+%*%=]%s", "", 1)) end
 local box_to_list = function(line, mark)
-  return (line:gsub("^(%s*)[%-%+%*%=]%s%[[ x~!>]%]%s(.*)", "%1" .. mark .. " %2"))
+  return (line:gsub("^([%s>]*)[%-%+%*%=]%s%[[ x~!>]%]%s(.*)", "%1" .. mark .. " %2"))
 end
-local olist_to_list = function(line, mark) return (line:gsub("^(%s*)%d+%.%s(.*)", "%1" .. mark .. " %2")) end
+local olist_to_list = function(line, mark) return (line:gsub("^([%s>]*)%d+%.%s(.*)", "%1" .. mark .. " %2")) end
 
 local cycled_list_mark = function(line)
   local marks = current_config.list_table and current_config.list_table or { "-" }
@@ -101,12 +100,12 @@ end
                         Ordered Lists
 --]========================================================]
 -- NOTE: This regex matches: "1", "2", "3", ...
-local matched_olist = function(line) return line:match("^(%s*)(%d+)%.%s") end
+local matched_olist = function(line) return line:match("^([%s>]*)(%d+)%.%s") end
 local has_olist = function(line) return matched_olist(line) ~= nil end
-local create_olist = function(line) return (line:gsub("^(%s*)(.*)", "%11. %2")) end
-local remove_olist = function(line) return line:gsub("(%s*)%d+%.%s", "%1", 1) end
-local list_to_olist = function(line) return (line:gsub("^(%s*)[%-%+%*%=]%s(.*)", "%11. %2")) end
-local box_to_olist = function(line) return (line:gsub("^(%s*)[%-%+%*%=]%s%[[ x~!>]%]%s(.*)", "%11. %2")) end
+local create_olist = function(line) return (line:gsub("^([%s>]*)(.*)", "%11. %2")) end
+local remove_olist = function(line) return line:gsub("([%s>]*)%d+%.%s", "%1", 1) end
+local list_to_olist = function(line) return (line:gsub("^([%s>]*)[%-%+%*%=]%s(.*)", "%11. %2")) end
+local box_to_olist = function(line) return (line:gsub("^([%s>]*)[%-%+%*%=]%s%[[ x~!>]%]%s(.*)", "%11. %2")) end
 
 ---@param olist_mark string 1, 2, 3, ...
 ---@return string
@@ -128,21 +127,21 @@ local empty_box = function() return "[ ]" end
 -- NOTE: This regex matches:
 -- group1(mark): "-", "+", "*", "="
 -- group2(state): " ", "x", "~", "!", ">"
-local matched_box = function(line) return line:match("^(%s*)([%-%+%*%=])%s%[([ x~!>])%]%s") end
+local matched_box = function(line) return line:match("^([%s>]*)([%-%+%*%=])%s%[([ x~!>])%]%s") end
 local has_box = function(line) return matched_box(line) ~= nil end
 local check_box = function(line)
   return (line:gsub("([%-%+%*%=]%s)%[ %]", "%1[" .. current_config.box_table[1] .. "]", 1))
 end
 local uncheck_box = function(line) return (line:gsub("([%-%+%*%=]%s)%[[x~!>]%]", "%1" .. empty_box(), 1)) end
 local create_box = function(line, mark)
-  return (line:gsub("^(%s*)(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
+  return (line:gsub("^([%s>]*)(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
 end
-local remove_box = function(line) return line:gsub("(%s*)[%-%+%*%=]%s%[[ x~!>]%]%s", "%1", 1) end
+local remove_box = function(line) return line:gsub("([%s>]*)[%-%+%*%=]%s%[[ x~!>]%]%s", "%1", 1) end
 local list_to_box = function(line, mark)
-  return (line:gsub("^(%s*)[%-%+%*%=]%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
+  return (line:gsub("^([%s>]*)[%-%+%*%=]%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
 end
 local olist_to_box = function(line, mark)
-  return (line:gsub("^(%s*)%d+%.%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
+  return (line:gsub("^([%s>]*)%d+%.%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
 end
 local cycled_box_state = function(line)
   local states = current_config.box_table
@@ -170,19 +169,17 @@ local skip_blank_and_heading = function(line)
   return current_config.enable_blankhead_skip and (is_blankline(line) or has_heading(line))
 end
 local skip_blank = function(line) return current_config.enable_blankhead_skip and is_blankline(line) end
-local is_marked = function(line)
+local has_mark = function(line, toggle_mode)
   -- Separate a head-of-line quote mark from the rest(body)
   local body = separate_quote(line).body or line
 
   -- Check if already marked
-  return has_box(line)
-    or has_list(line)
-    or has_olist(line)
-    or has_heading(line)
-    or has_box(body)
-    or has_list(body)
-    or has_olist(body)
-    or has_heading(body)
+  return toggle_mode == "checkbox" and (has_box(line) or has_box(body))
+    or toggle_mode == "checkbox_cycle" and (has_box(line) or has_box(body))
+    or toggle_mode == "list" and (has_list(line) or has_list(body))
+    or toggle_mode == "list_cycle" and (has_list(line) or has_list(body))
+    or toggle_mode == "olist" and (has_olist(line) or has_olist(body))
+    or toggle_mode == "heading" and (has_heading(line) or has_heading(body))
 end
 
 --[========================================================[
@@ -211,8 +208,6 @@ end
 --- @param line string
 --- @return string
 local get_toggled_list = function(line)
-  if has_heading(line) then return line end
-
   if has_box(line) then
     return box_to_list(line, list_mark)
   elseif has_list(line) then
@@ -227,8 +222,6 @@ end
 --- @param line string
 --- @return string
 local get_cycled_list = function(line)
-  if has_heading(line) then return line end
-
   if has_box(line) then
     return box_to_list(line, list_mark)
   elseif has_list(line) then
@@ -243,8 +236,6 @@ end
 --- @param line string
 --- @return string
 local get_toggled_olist = function(line)
-  if has_heading(line) then return line end
-
   if has_box(line) then
     return box_to_olist(line)
   elseif has_list(line) then
@@ -259,8 +250,6 @@ end
 --- @param line string
 --- @return string
 local get_toggled_box = function(line)
-  if has_heading(line) then return line end
-
   local _, _, state = matched_box(line)
 
   if state == " " then
@@ -280,8 +269,6 @@ end
 --- @param line string
 --- @return string
 local get_cycled_box = function(line)
-  if has_heading(line) then return line end
-
   local _, _, state = matched_box(line)
 
   if state ~= nil then
@@ -372,7 +359,7 @@ local toggle_unmarked_lines = function(toggle_mode)
   for i, line in ipairs(lines) do
     repeat
       if toggle_mode ~= "quote" and skip_blank_and_heading(line) then break end
-      if toggle_mode ~= "quote" and is_marked(line) then break end
+      if toggle_mode ~= "quote" and has_mark(line, toggle_mode) then break end
       if toggle_mode == "quote" and has_quote(line) then break end
 
       new_lines[i] = get_toggled_line(toggle_mode, line)
@@ -410,9 +397,6 @@ end
 ---@param cin string character input
 local autolist = function(cin)
   local line = vim.api.nvim_get_current_line()
-
-  -- TODO: Support only indent smaller than 3 spaces when toggling (maybe no relevant to this block?)
-  -- local indent = line:match("^(%s{,3})")
 
   -- Detect beginning-of-line(bol) whitespaces and quote marks
   local bol, body = matched_bol_body(line)
