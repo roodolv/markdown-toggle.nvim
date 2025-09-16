@@ -33,11 +33,11 @@ end
 --[========================================================[
                            Quotes
 --]========================================================]
-local has_quote = function(line) return line:match("^%s*>%s.*$") ~= nil end
+local has_quote = function(line) return line:match("^%s?%s?%s?>%s?.*$") ~= nil end
 local create_quote = function(line) return (line:gsub("^(.*)$", "> %1")) end
-local remove_quote = function(line) return (line:gsub(">%s", "", 1)) end
+local remove_quote = function(line) return (line:gsub("^(%s?%s?%s?)>%s?", "", 1)) end
 local separate_quote = function(line)
-  local whitespace, mark, body = line:match("^(%s*)(>%s*)(.*)$")
+  local whitespace, mark, body = line:match("^(%s?%s?%s?)(>%s?)(.*)$")
   if mark == nil then
     whitespace, mark, body = "", "", line
   end
@@ -169,19 +169,17 @@ local skip_blank_and_heading = function(line)
   return current_config.enable_blankhead_skip and (is_blankline(line) or has_heading(line))
 end
 local skip_blank = function(line) return current_config.enable_blankhead_skip and is_blankline(line) end
-local is_marked = function(line)
+local has_mark = function(line, toggle_mode)
   -- Separate a head-of-line quote mark from the rest(body)
   local body = separate_quote(line).body or line
 
   -- Check if already marked
-  return has_box(line)
-    or has_list(line)
-    or has_olist(line)
-    or has_heading(line)
-    or has_box(body)
-    or has_list(body)
-    or has_olist(body)
-    or has_heading(body)
+  return toggle_mode == "checkbox" and (has_box(line) or has_box(body))
+    or toggle_mode == "checkbox_cycle" and (has_box(line) or has_box(body))
+    or toggle_mode == "list" and (has_list(line) or has_list(body))
+    or toggle_mode == "list_cycle" and (has_list(line) or has_list(body))
+    or toggle_mode == "olist" and (has_olist(line) or has_olist(body))
+    or toggle_mode == "heading" and (has_heading(line) or has_heading(body))
 end
 
 --[========================================================[
@@ -210,8 +208,6 @@ end
 --- @param line string
 --- @return string
 local get_toggled_list = function(line)
-  if has_heading(line) then return line end
-
   if has_box(line) then
     return box_to_list(line, list_mark)
   elseif has_list(line) then
@@ -226,8 +222,6 @@ end
 --- @param line string
 --- @return string
 local get_cycled_list = function(line)
-  if has_heading(line) then return line end
-
   if has_box(line) then
     return box_to_list(line, list_mark)
   elseif has_list(line) then
@@ -242,8 +236,6 @@ end
 --- @param line string
 --- @return string
 local get_toggled_olist = function(line)
-  if has_heading(line) then return line end
-
   if has_box(line) then
     return box_to_olist(line)
   elseif has_list(line) then
@@ -258,8 +250,6 @@ end
 --- @param line string
 --- @return string
 local get_toggled_box = function(line)
-  if has_heading(line) then return line end
-
   local _, _, state = matched_box(line)
 
   if state == " " then
@@ -279,8 +269,6 @@ end
 --- @param line string
 --- @return string
 local get_cycled_box = function(line)
-  if has_heading(line) then return line end
-
   local _, _, state = matched_box(line)
 
   if state ~= nil then
@@ -371,7 +359,7 @@ local toggle_unmarked_lines = function(toggle_mode)
   for i, line in ipairs(lines) do
     repeat
       if toggle_mode ~= "quote" and skip_blank_and_heading(line) then break end
-      if toggle_mode ~= "quote" and is_marked(line) then break end
+      if toggle_mode ~= "quote" and has_mark(line, toggle_mode) then break end
       if toggle_mode == "quote" and has_quote(line) then break end
 
       new_lines[i] = get_toggled_line(toggle_mode, line)
