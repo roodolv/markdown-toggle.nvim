@@ -377,7 +377,7 @@ local toggle_unmarked_lines = function(toggle_mode)
 end
 
 --- @param toggle_mode ToggleMode
-local toggle_wrapper = function(toggle_mode)
+local toggle_by_mode = function(toggle_mode)
   local vim_mode = vim.fn.mode()
 
   if vim_mode == "n" then
@@ -446,7 +446,7 @@ end
 --]========================================================]
 -- Setup functions such like: `M.quote()`, `M.quote_dot()`
 local setup_toggle_functions = function(toggle_mode)
-  M[toggle_mode] = function() toggle_wrapper(toggle_mode) end
+  M[toggle_mode] = function() toggle_by_mode(toggle_mode) end
   M[toggle_mode .. "_dot"] = function()
     vim.go.operatorfunc = string.format("v:lua.require'markdown-toggle'.%s", toggle_mode)
     return "g@l"
