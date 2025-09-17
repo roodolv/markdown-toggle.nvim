@@ -15,6 +15,7 @@ A simple and useful set of toggle commands for Markdown. Similar to [Obsidian](h
 - Change plugin settings **on-the-fly**
   - Unmarked Only: Toggle only unmarked lines first
   - Blankhead Skip: Skip blank lines and headings in Visual mode (except for `quote()`)
+    - **NOTE**: It will be split into **Blankline Skip** and **Heading Skip**.
   - Autolist Same-state: Maintain checkbox state when continuing lists
 ![config_switch01](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/d34359b2-febe-4165-ba77-eeee79676a95)
 ![config_switch02](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/97f9667d-a2c4-4351-9a30-6a370827e48f)
@@ -388,16 +389,16 @@ If you'd like a good experience, you should set `autoindent = false` or `noautoi
 - [markdown-togglecheck](https://github.com/nfrid/markdown-togglecheck)
 
 ## Todo
-**NOTE**: This is just a provisional plan.
+**NOTE**: This is just a provisional plan as of September 2025.
 
-- [x] Improve `autolist()` and make it simple
-- [ ] Rename and consolidate options
-    - Use more generic config names
+- [x] Supports consecutive whitespaces and quotes on the beginning of a line
+- [x] `quote()` behaves based on the indentation depth
+- [ ] Change `checkbox()` behavior against an ordered list
+- [ ] Split **Blankhead Skip** into **Blankline Skip** and **Heading Skip**
 - [ ] Recalculate ordered lists automatically
-- [ ] Implement various **autolist** behaviors triggered by consecutive `<CR>` presses
-- [ ] Enable `heading()` to directly replace list, olist, or checkbox items
-- [ ] Add an option to toggle `1.` inside headings like `### hoge` to `### 1. hoge`
-- [ ] Indent text in block quotes with `Tab`, changing `> hoge` to `> ____hoge`
-- [ ] Add plugin commands (e.g., `:MarkdownToggleQuote`) to call API functions
+- [ ] The Marks should be removed by pressing `<CR>` repeatedly
+- [ ] Indent the inner quoted text using `Tab`
 - [ ] Integrate `v:count` (`vim.v.count`) support to handle repeated actions
   - Example: `2<C-h>` should call the `heading()` function twice
+- [ ] Add `heading_toggle()` function
+- [ ] Add plugin commands (e.g., `:MarkdownToggleQuote`) to call API functions
