@@ -14,8 +14,7 @@ A simple and useful set of toggle commands for Markdown. Similar to [Obsidian](h
 - Use Vim's dot (`.`) command to repeat toggle actions (only in Normal mode)
 - Change plugin settings **on-the-fly**
   - Unmarked Only: Toggle only unmarked lines first
-  - Blankhead Skip: Skip blank lines and headings in Visual mode (except for `quote()`)
-    - **NOTE**: It will be split into **Blankline Skip** and **Heading Skip**.
+  - Blankline & Heading Skip: Skip blank lines and headings in Visual mode (except for `quote()`)
   - Autolist Same-state: Maintain checkbox state when continuing lists
 ![config_switch01](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/d34359b2-febe-4165-ba77-eeee79676a95)
 ![config_switch02](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/97f9667d-a2c4-4351-9a30-6a370827e48f)
@@ -94,8 +93,10 @@ require("markdown-toggle").setup({
   -- The heading marks table used in `markdown-toggle.heading`
   heading_table = { "#", "##", "###", "####", "#####" },
 
-  -- Skip blank lines and headings in Visual mode (except for `quote()`)
-  enable_blankhead_skip = true,
+  -- Skip blank lines in Visual mode (except for `quote()`)
+  enable_blankline_skip = true,
+  -- Skip headings in Visual mode (except for `quote()`)
+  enable_heading_skip = true,
   -- Toggle only unmarked lines first
   enable_unmarked_only = true,
   -- Automatically continue lists on new lines
@@ -282,7 +283,8 @@ You can switch various options in the comfort of your active buffer, without the
 
 ```lua
 vim.keymap.set("n", "<Leader>mU", toggle.switch_unmarked_only, opts)
-vim.keymap.set("n", "<Leader>mB", toggle.switch_blankhead_skip, opts)
+vim.keymap.set("n", "<Leader>mB", toggle.switch_blankline_skip, opts)
+vim.keymap.set("n", "<Leader>mH", toggle.switch_heading_skip, opts)
 vim.keymap.set("n", "<Leader>mS", toggle.switch_auto_samestate, opts)
 vim.keymap.set("n", "<Leader>mL", toggle.switch_cycle_list_table, opts)
 vim.keymap.set("n", "<Leader>mX", toggle.switch_cycle_box_table, opts)
@@ -306,7 +308,7 @@ This plugin provides the following set of API functions:
 | Dot-repeatable        | `XXX_dot()`           | Normal         |
 | Autolist              | `autolist_up()`<br>`autolist_down()` | Normal |
 |                       | `autolist_cr()`       | Insert         |
-| Config-switch         | `switch_unmarked_only()`<br>`switch_blankhead_skip()`<br>`switch_auto_samestate()`<br>`switch_cycle_list_table()`<br>`switch_cycle_box_table()`<br>`switch_list_before_box` | Normal |
+| Config-switch         | `switch_unmarked_only()`<br>`switch_blankline_skip()`<br>`switch_heading_skip()`<br>`switch_auto_samestate()`<br>`switch_cycle_list_table()`<br>`switch_cycle_box_table()`<br>`switch_list_before_box` | Normal |
 
 ### API: Dot-repeatable
 Dot-repeatable functions have names like `XXX_dot()`.
@@ -393,8 +395,8 @@ If you'd like a good experience, you should set `autoindent = false` or `noautoi
 
 - [x] Supports consecutive whitespaces and quotes on the beginning of a line
 - [x] `quote()` behaves based on the indentation depth
+- [x] Split **Blankhead Skip** into **Blankline Skip** and **Heading Skip**
 - [ ] Change `checkbox()` behavior against an ordered list
-- [ ] Split **Blankhead Skip** into **Blankline Skip** and **Heading Skip**
 - [ ] Recalculate ordered lists automatically
 - [ ] The Marks should be removed by pressing `<CR>` repeatedly
 - [ ] Indent the inner quoted text using `Tab`
