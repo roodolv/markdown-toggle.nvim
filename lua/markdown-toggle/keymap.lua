@@ -44,7 +44,10 @@ M.set = function(config)
           n = { callback = toggle.switch_unmarked_only, desc = "MarkdownToggle Switch unmarked-only" },
         },
         ["<Leader>mB"] = {
-          n = { callback = toggle.switch_blankhead_skip, desc = "MarkdownToggle Switch blankhead-skip" },
+          n = { callback = toggle.switch_blankline_skip, desc = "MarkdownToggle Switch blankline-skip" },
+        },
+        ["<Leader>mH"] = {
+          n = { callback = toggle.switch_heading_skip, desc = "MarkdownToggle Switch heading-skip" },
         },
         ["<Leader>mS"] = {
           n = { callback = toggle.switch_auto_samestate, desc = "MarkdownToggle Switch auto-samestate" },

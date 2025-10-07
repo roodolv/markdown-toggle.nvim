@@ -165,10 +165,8 @@ local matched_bol = function(line) return line:match("^(%s*).*$") end
 local matched_body = function(line) return line:match("^%s*(.*)$") end
 local matched_bol_body = function(line) return line:match("^(%s*)(.*)$") end
 local is_blankline = function(line) return line:match("^$") ~= nil end
-local skip_blank_and_heading = function(line)
-  return current_config.enable_blankhead_skip and (is_blankline(line) or has_heading(line))
-end
-local skip_blank = function(line) return current_config.enable_blankhead_skip and is_blankline(line) end
+local skip_blankline = function(line) return current_config.enable_blankline_skip and is_blankline(line) end
+local skip_heading = function(line) return current_config.enable_heading_skip and has_heading(line) end
 local has_mark = function(line, toggle_mode)
   -- Separate a head-of-line quote mark from the rest(body)
   local body = separate_quote(line).body or line
@@ -338,8 +336,8 @@ local toggle_all_lines = function(toggle_mode)
 
   for i, line in ipairs(lines) do
     repeat
-      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and skip_blank_and_heading(line) then break end
-      if toggle_mode == "heading" and skip_blank(line) then break end
+      if toggle_mode ~= "quote" and skip_blankline(line) then break end
+      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and skip_heading(line) then break end
 
       new_lines[i] = get_toggled_line(toggle_mode, line)
     until true
@@ -358,7 +356,8 @@ local toggle_unmarked_lines = function(toggle_mode)
   -- 1st block: Toggle only unmarked lines
   for i, line in ipairs(lines) do
     repeat
-      if toggle_mode ~= "quote" and skip_blank_and_heading(line) then break end
+      if toggle_mode ~= "quote" and skip_blankline(line) then break end
+      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and skip_heading(line) then break end
       if toggle_mode ~= "quote" and has_mark(line, toggle_mode) then break end
       if toggle_mode == "quote" and has_quote(line) then break end
 
@@ -465,7 +464,8 @@ M.autolist_down = function() autolist("o") end
 M.autolist_cr = function() autolist(util.get_eol()) end
 
 -- Config-switch
-M.switch_blankhead_skip = function() switch_option("enable_blankhead_skip") end
+M.switch_blankline_skip = function() switch_option("enable_blankline_skip") end
+M.switch_heading_skip = function() switch_option("enable_heading_skip") end
 M.switch_unmarked_only = function() switch_option("enable_unmarked_only") end
 M.switch_auto_samestate = function() switch_option("enable_auto_samestate") end
 
