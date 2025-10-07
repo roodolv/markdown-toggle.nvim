@@ -9,7 +9,8 @@ local M = {}
 ---@field cycle_box_table boolean
 ---@field list_before_box boolean
 ---@field heading_table string[]
----@field enable_blankhead_skip boolean
+---@field enable_blankline_skip boolean
+---@field enable_heading_skip boolean
 ---@field enable_unmarked_only boolean
 ---@field enable_autolist boolean
 ---@field enable_auto_samestate boolean
@@ -37,8 +38,10 @@ local config = {
   -- The heading marks table used in `markdown-toggle.heading`
   heading_table = { "#", "##", "###", "####", "#####" },
 
-  -- Skip blank lines and headings in Visual mode (except for `quote()`)
-  enable_blankhead_skip = true,
+  -- Skip blank lines in Visual mode (except for `quote()`)
+  enable_blankline_skip = true,
+  -- Skip headings in Visual mode (except for `quote()`)
+  enable_heading_skip = true,
   -- Toggle only unmarked lines first
   enable_unmarked_only = true,
   -- Automatically continue lists on new lines
