@@ -355,27 +355,25 @@ If you'd like this plugin to behave like Obsidian, take a look at this:
 </details>
 
 ### Autolist Configs
-If you'd like a good experience, you should set `autoindent = false` or `noautoindent` for Markdown buffers.
+If you'd like a good experience, you should set `autoindent = true` for Markdown buffers.
 
 <details>
   <summary>Example</summary>
 
   ```lua
-  vim.o.autoindent = false
+  vim.o.autoindent = true
   ```
 
   or
 
   ```lua
-  vim.o.autoindent = true
-
   vim.api.nvim_create_autocmd({ "FileType" }, {
     pattern = "markdown",
-    command = "setl expandtab tabstop=4 shiftwidth=4 softtabstop=4 noautoindent",
+    callback = function()
+      vim.opt_local.autoindent = true
+    end,
   })
   ```
-
-**NOTE**: You can freely set the values for `tabstop`, `shiftwidth` and `softtabstop`.
 </details>
 
 ### Ordered Checkbox Config
