@@ -3,16 +3,14 @@
 A simple and useful set of toggle commands for Markdown. Similar to [Obsidian](https://obsidian.md)
 
 ### Features
-- Handles quotes, headings, lists (unordered and ordered), and checkboxes
+- Handles quotes, headings, bullet lists, ordered lists, checkboxes, and ordered checkboxes
 ![markdown_common](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/a6843366-ba67-4828-a6c3-780a2e0fba5c)
-
-- Cycle through different levels of headings, types of lists, and states of checkboxes
+- Cycles through different levels of headings, types of lists, and states of checkboxes
 ![cyclic_toggling01](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/f52d5719-5a9a-4770-b149-808f673a1a3f)
 ![cyclic_toggling02](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/585fa715-2df8-40df-8f69-bca478340c30)
-
-- Automatically continue quotes, lists, and checkboxes when starting a new line
-- Use Vim's dot (`.`) command to repeat toggle actions (only in Normal mode)
-- Change plugin settings **on-the-fly**
+- Automatically continues quotes, lists, and checkboxes when starting a new line
+- You can use Vim's dot (`.`) command to repeat toggle actions (only in Normal mode)
+- You can change plugin settings **on-the-fly**
   - Unmarked Only: Toggle only unmarked lines first
   - Blankline & Heading Skip: Skip blank lines and headings in Visual mode (except for `quote()`)
   - Autolist Same-state: Maintain checkbox state when continuing lists
@@ -87,8 +85,10 @@ require("markdown-toggle").setup({
   box_table = { "x", "~", "!", ">" },
   -- Cycle the marks in user-defined table when toggling checkboxes
   cycle_box_table = false,
-  -- A bullet list is toggled before turning into a checkbox (similar to how it works in Obsidian).
+  -- A bullet/ordered list is toggled before turning into a checkbox (similar to how it works in Obsidian).
   list_before_box = false,
+  -- Whether to treat an ordered checkbox as an ordered list when you call `olist()`
+  obox_as_olist = true,
 
   -- The heading marks table used in `markdown-toggle.heading`
   heading_table = { "#", "##", "###", "####", "#####" },
@@ -358,7 +358,7 @@ If you'd like this plugin to behave like Obsidian, take a look at this:
 If you'd like a good experience, you should set `autoindent = false` or `noautoindent` for Markdown buffers.
 
 <details>
-  <summary>Here is an example:</summary>
+  <summary>Example</summary>
 
   ```lua
   vim.o.autoindent = false
@@ -376,6 +376,45 @@ If you'd like a good experience, you should set `autoindent = false` or `noautoi
   ```
 
 **NOTE**: You can freely set the values for `tabstop`, `shiftwidth` and `softtabstop`.
+</details>
+
+### Ordered Checkbox Config
+You can switch how to treat ordered checkboxes with `obox_as_olist` config.
+
+<details>
+  <summary>Example</summary>
+
+  You can set `obox_as_olist` in your `init.lua` (default value is `true`):
+  ```lua
+  {
+    "roodolv/markdown-toggle.nvim",
+    ft = "markdown",
+    config = function()
+      require("markdown-toggle").setup({
+        obox_as_olist = true,
+      })
+    end,
+  },
+  ```
+
+  When `obox_as_olist` is set to `true`, the API function `olist()` behaves as follows:
+  ```txt
+  1. [ ] foo
+  
+  ↓ olist()
+  
+  foo
+  ```
+
+  When `obox_as_olist` is set to `false`:
+  ```txt
+  1. [ ] bar
+  
+  ↓ olist()
+  
+  1. bar
+  ```
+
 </details>
 
 ## Related Plugins
@@ -396,7 +435,7 @@ If you'd like a good experience, you should set `autoindent = false` or `noautoi
 - [x] Supports consecutive whitespaces and quotes on the beginning of a line
 - [x] `quote()` behaves based on the indentation depth
 - [x] Split **Blankhead Skip** into **Blankline Skip** and **Heading Skip**
-- [ ] Change `checkbox()` behavior against an ordered list
+- [x] Support **Ordered Checkboxes** and add `obox_as_olist` config
 - [ ] Recalculate ordered lists automatically
 - [ ] The Marks should be removed by pressing `<CR>` repeatedly
 - [ ] Indent the inner quoted text using `Tab`
