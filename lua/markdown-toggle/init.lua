@@ -478,23 +478,17 @@ end
 local autolist = function(cin)
   local line = vim.api.nvim_get_current_line()
 
-  -- Detect beginning-of-line(bol) whitespaces and quote marks
-  local bol, body = matched_bol_body(line)
-  local sep_quote = separate_quote(body)
+  -- First, separate quote marks from the entire line (preserving leading spaces)
+  local sep_quote = separate_quote(line)
 
   -- New beginning-of-line
   local new_bol = ""
 
-  -- NOTE: If you'd like good experience, please set `autoindent = false` or `noautoindent` for markdown files.
-  if vim.o.autoindent == false then
-    if bol ~= "" and bol ~= nil then new_bol = bol end
-  end
-
   -- If a quote mark exists, combine the quote mark with the bol spaces
-  if sep_quote.mark then new_bol = new_bol .. sep_quote.mark end
+  if sep_quote.mark and sep_quote.mark ~= "" then new_bol = new_bol .. sep_quote.mark end
 
   -- If a quote mark exists, the rest of the line is passed as a target
-  local target_line = sep_quote.mark and sep_quote.body or body
+  local target_line = (sep_quote.mark and sep_quote.mark ~= "") and sep_quote.body or sep_quote.body
 
   local _, box_mark, box_state = matched_box(target_line)
   local box = box_state ~= nil and string.format("%s [%s] ", box_mark, box_state) or nil
