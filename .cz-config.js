@@ -2,7 +2,7 @@ module.exports = {
   types: [
     {
       value: "improve",
-      name: "improvement: Some updates to existing functionality etc",
+      name: "improve: Some updates to existing functionality etc",
       title: "Improvements",
     },
     {
