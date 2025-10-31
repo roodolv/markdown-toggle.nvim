@@ -8,6 +8,7 @@ local M = {}
 ---@field box_table string[]
 ---@field cycle_box_table boolean
 ---@field list_before_box boolean
+---@field obox_as_olist boolean
 ---@field heading_table string[]
 ---@field enable_blankline_skip boolean
 ---@field enable_heading_skip boolean
@@ -32,8 +33,11 @@ local config = {
   box_table = { "x", "~", "!", ">" },
   -- Cycle the marks in user-defined table when toggling checkboxes
   cycle_box_table = false,
-  -- A bullet list is toggled before turning into a checkbox (similar to how it works in Obsidian).
+
+  -- A bullet/ordered list is toggled before turning into a checkbox (similar to how it works in Obsidian).
   list_before_box = false,
+  -- Whether to treat an ordered checkbox as an ordered list when you call `olist()`
+  obox_as_olist = true,
 
   -- The heading marks table used in `markdown-toggle.heading`
   heading_table = { "#", "##", "###", "####", "#####" },

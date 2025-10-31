@@ -106,6 +106,7 @@ local create_olist = function(line) return (line:gsub("^([%s>]*)(.*)", "%11. %2"
 local remove_olist = function(line) return line:gsub("([%s>]*)%d+%.%s", "%1", 1) end
 local list_to_olist = function(line) return (line:gsub("^([%s>]*)[%-%+%*%=]%s(.*)", "%11. %2")) end
 local box_to_olist = function(line) return (line:gsub("^([%s>]*)[%-%+%*%=]%s%[[ x~!>]%]%s(.*)", "%11. %2")) end
+local obox_to_olist = function(line) return (line:gsub("^([%s>]*)(%d+%.%s)%[[ x~!>]%]%s(.*)", "%1%2%3")) end
 
 ---@param olist_mark string 1, 2, 3, ...
 ---@return string
@@ -124,9 +125,12 @@ end
                          Checkboxes
 --]========================================================]
 local empty_box = function() return "[ ]" end
+
+--------- Normal Checkboxes ---------
 -- NOTE: This regex matches:
--- group1(mark): "-", "+", "*", "="
--- group2(state): " ", "x", "~", "!", ">"
+-- group1(whitespace): spaces or quotes
+-- group2(mark): "-", "+", "*", "="
+-- group3(state): " ", "x", "~", "!", ">"
 local matched_box = function(line) return line:match("^([%s>]*)([%-%+%*%=])%s%[([ x~!>])%]%s") end
 local has_box = function(line) return matched_box(line) ~= nil end
 local check_box = function(line)
@@ -158,6 +162,33 @@ local cycle_box = function(line, mark)
   return (line:gsub("(%[)[ x~!>](%])", "%1" .. state .. "%2", 1))
 end
 
+--------- Ordered Checkboxes ---------
+-- NOTE: This regex matches ordered-checkbox:
+-- group1(whitespace): spaces or quotes
+-- group2(number): "1", "2", "3", ...
+-- group3(state): " ", "x", "~", "!", ">"
+local matched_obox = function(line) return line:match("^([%s>]*)(%d+)%.%s%[([ x~!>])%]%s") end
+local has_obox = function(line) return matched_obox(line) ~= nil end
+local check_obox = function(line) return (line:gsub("(%d+%.%s)%[ %]", "%1[" .. current_config.box_table[1] .. "]", 1)) end
+local uncheck_obox = function(line) return (line:gsub("(%d+%.%s)%[[x~!>]%]", "%1" .. empty_box(), 1)) end
+local create_obox = function(line) return (line:gsub("^([%s>]*)(.*)", "%11. " .. empty_box() .. " %2")) end
+local remove_obox = function(line) return line:gsub("([%s>]*)%d+%.%s%[[ x~!>]%]%s", "%1", 1) end
+local olist_to_obox = function(line) return (line:gsub("^([%s>]*)(%d+%.%s)(.*)", "%1%2" .. empty_box() .. " %3")) end
+local cycled_obox_state = function(line)
+  local states = current_config.box_table
+  local _, _, matched = matched_obox(line)
+  for i, state in ipairs(states) do
+    if matched == state and i < #states then return states[i + 1] end
+    if matched == states[#states] then return "end" end -- At the last element
+  end
+  return states[1] ~= nil and states[1] or " "
+end
+local cycle_obox = function(line)
+  local state = cycled_obox_state(line)
+  if state == "end" then return current_config.list_before_box and obox_to_olist(line) or uncheck_obox(line) end
+  return (line:gsub("(%[)[ x~!>](%])", "%1" .. state .. "%2", 1))
+end
+
 --[========================================================[
                          Line State
 --]========================================================]
@@ -172,11 +203,12 @@ local has_mark = function(line, toggle_mode)
   local body = separate_quote(line).body or line
 
   -- Check if already marked
-  return toggle_mode == "checkbox" and (has_box(line) or has_box(body))
-    or toggle_mode == "checkbox_cycle" and (has_box(line) or has_box(body))
+  -- PERF: Only `has_box(body)` is needed; remove `has_box(line)`
+  return toggle_mode == "checkbox" and (has_box(line) or has_box(body) or has_obox(line) or has_obox(body))
+    or toggle_mode == "checkbox_cycle" and (has_box(line) or has_box(body) or has_obox(line) or has_obox(body))
     or toggle_mode == "list" and (has_list(line) or has_list(body))
     or toggle_mode == "list_cycle" and (has_list(line) or has_list(body))
-    or toggle_mode == "olist" and (has_olist(line) or has_olist(body))
+    or toggle_mode == "olist" and (has_olist(line) or has_olist(body) or has_obox(line) or has_obox(body))
     or toggle_mode == "heading" and (has_heading(line) or has_heading(body))
 end
 
@@ -234,8 +266,11 @@ end
 --- @param line string
 --- @return string
 local get_toggled_olist = function(line)
-  if has_box(line) then
-    return box_to_olist(line)
+  if has_obox(line) then
+    return current_config.obox_as_olist and remove_obox(line) or obox_to_olist(line)
+  elseif has_box(line) then
+    -- return box_to_obox(line)
+    return box_to_olist(line) -- NOTE: same as Obsidian
   elseif has_list(line) then
     return list_to_olist(line)
   elseif has_olist(line) then
@@ -249,15 +284,21 @@ end
 --- @return string
 local get_toggled_box = function(line)
   local _, _, state = matched_box(line)
+  local _, _, ostate = matched_obox(line)
 
   if state == " " then
     return check_box(line)
   elseif state ~= nil then
     return current_config.list_before_box and box_to_list(line, list_mark) or uncheck_box(line)
+  elseif ostate == " " then
+    return check_obox(line)
+  elseif ostate ~= nil then
+    return current_config.list_before_box and obox_to_olist(line) or uncheck_obox(line)
   elseif has_list(line) then
     return list_to_box(line, list_mark)
   elseif has_olist(line) then
-    return olist_to_box(line, list_mark)
+    -- return olist_to_box(line, list_mark)
+    return olist_to_obox(line) -- NOTE: same as Obsidian
   else
     -- If `list_before_box` is true, a bullet list is toggled first.
     return current_config.list_before_box and create_list(line, list_mark) or create_box(line, list_mark)
@@ -268,13 +309,17 @@ end
 --- @return string
 local get_cycled_box = function(line)
   local _, _, state = matched_box(line)
+  local _, _, ostate = matched_obox(line)
 
   if state ~= nil then
     return cycle_box(line, list_mark)
+  elseif ostate ~= nil then
+    return cycle_obox(line)
   elseif has_list(line) then
     return list_to_box(line, list_mark)
   elseif has_olist(line) then
-    return olist_to_box(line, list_mark)
+    -- return olist_to_box(line, list_mark)
+    return olist_to_obox(line) -- NOTE: same as Obsidian
   else
     -- If `list_before_box` is true, a bullet list is toggled first.
     return current_config.list_before_box and create_list(line, list_mark) or create_box(line, list_mark)
