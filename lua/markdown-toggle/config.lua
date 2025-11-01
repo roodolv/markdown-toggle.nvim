@@ -15,6 +15,7 @@ local M = {}
 ---@field enable_unmarked_only boolean
 ---@field enable_autolist boolean
 ---@field enable_auto_samestate boolean
+---@field enable_olist_recalc boolean
 ---@field enable_dot_repeat boolean
 
 ---@type MarkdownToggleConfig
@@ -52,6 +53,8 @@ local config = {
   enable_autolist = true,
   -- Maintain checkbox state when continuing lists
   enable_auto_samestate = false,
+  -- Automatically recalculate ordered list numbers
+  enable_olist_recalc = true,
   -- Dot-repeat for toggle functions in Normal mode
   enable_dot_repeat = true,
 }
