@@ -8,6 +8,7 @@ A simple and useful set of toggle commands for Markdown. Similar to [Obsidian](h
 - Cycles through different levels of headings, types of lists, and states of checkboxes
 ![cyclic_toggling01](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/f52d5719-5a9a-4770-b149-808f673a1a3f)
 ![cyclic_toggling02](https://github.com/roodolv/markdown-toggle.nvim/assets/113752412/585fa715-2df8-40df-8f69-bca478340c30)
+- **Recalculates** ordered lists and ordered checkboxes automatically
 - Automatically continues quotes, lists, and checkboxes when starting a new line
 - You can use Vim's dot (`.`) command to repeat toggle actions (only in Normal mode)
 - You can change plugin settings **on-the-fly**
@@ -103,6 +104,8 @@ require("markdown-toggle").setup({
   enable_autolist = true,
   -- Maintain checkbox state when continuing lists
   enable_auto_samestate = false,
+  -- Automatically recalculate ordered list numbers
+  enable_olist_recalc = true,
   -- Dot-repeat for toggle functions in Normal mode
   enable_dot_repeat = true,
 })
@@ -434,10 +437,10 @@ You can switch how to treat ordered checkboxes with `obox_as_olist` config.
 - [x] `quote()` behaves based on the indentation depth
 - [x] Split **Blankhead Skip** into **Blankline Skip** and **Heading Skip**
 - [x] Support **Ordered Checkboxes** and add `obox_as_olist` config
-- [ ] Recalculate ordered lists automatically
-- [ ] The Marks should be removed by pressing `<CR>` repeatedly
-- [ ] Indent the inner quoted text using `Tab`
+- [x] Recalculate ordered lists automatically
 - [ ] Integrate `v:count` (`vim.v.count`) support to handle repeated actions
   - Example: `2<C-h>` should call the `heading()` function twice
-- [ ] Add `heading_toggle()` function
 - [ ] Add plugin commands (e.g., `:MarkdownToggleQuote`) to call API functions
+- [ ] The Marks should be removed by pressing `<CR>` repeatedly
+- [ ] Indent the inner quoted text using `Tab`
+- [ ] Add `heading_toggle()` function
