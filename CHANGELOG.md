@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.2.0](https://github.com/roodolv/markdown-toggle.nvim/compare/v0.1.2...v0.2.0) (2025-11-02)
+
+### Features
+- **olist**: supported ordered list recalculation ([#19](https://github.com/roodolv/markdown-toggle.nvim/pull/19))
+
+### Improvements
+- **config**: split enable-blankhead config into two configs ([#14](https://github.com/roodolv/markdown-toggle.nvim/pull/14))
+- **checkbox**: supported ordered checkboxes and added obox_as_olist config ([#16](https://github.com/roodolv/markdown-toggle.nvim/pull/16))
+
+### Bug Fixes
+- **quote**: fixed detection of successive quotes ([#17](https://github.com/roodolv/markdown-toggle.nvim/pull/17))
+- **autolist**: fixed indentation bug on autolist() ([#18](https://github.com/roodolv/markdown-toggle.nvim/pull/18))
+
 ## [v0.1.2](https://github.com/roodolv/markdown-toggle.nvim/compare/v0.1.1...v0.1.2) (2025-09-17)
 
 ### Improvements
