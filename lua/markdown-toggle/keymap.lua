@@ -1,5 +1,54 @@
 local M = {}
 
+-- Setup Vim commands for all API functions (buffer-local)
+local setup_vim_commands = function(bufnr)
+  local toggle = require("markdown-toggle")
+
+  -- Toggle commands with range support and dot-repeat capability
+  local toggle_commands = {
+    { name = "Quote", mode = "quote", desc = "Toggle quote marks" },
+    { name = "List", mode = "list", desc = "Toggle list marks" },
+    { name = "ListCycle", mode = "list_cycle", desc = "Cycle list marks" },
+    { name = "Olist", mode = "olist", desc = "Toggle ordered list marks" },
+    { name = "Checkbox", mode = "checkbox", desc = "Toggle checkbox marks" },
+    { name = "CheckboxCycle", mode = "checkbox_cycle", desc = "Cycle checkbox marks" },
+    { name = "Heading", mode = "heading", desc = "Toggle heading marks" },
+  }
+
+  for _, cmd in ipairs(toggle_commands) do
+    vim.api.nvim_buf_create_user_command(bufnr, "MarkdownToggle" .. cmd.name, function(opts)
+      if opts.range > 0 then
+        -- Visual mode: call the function directly
+        toggle[cmd.mode]()
+      else
+        -- Normal mode: use operatorfunc for dot-repeat support
+        vim.go.operatorfunc = string.format("v:lua.require'markdown-toggle'.%s", cmd.mode)
+        vim.api.nvim_feedkeys("g@l", "n", false)
+      end
+    end, {
+      range = true,
+      desc = cmd.desc,
+    })
+  end
+
+  -- Config switch commands
+  local switch_commands = {
+    { name = "SwitchUnmarked", func = toggle.switch_unmarked_only, desc = "Switch unmarked-only" },
+    { name = "SwitchBlankline", func = toggle.switch_blankline_skip, desc = "Switch blankline-skip" },
+    { name = "SwitchHeading", func = toggle.switch_heading_skip, desc = "Switch heading-skip" },
+    { name = "SwitchSamestate", func = toggle.switch_auto_samestate, desc = "Switch auto-samestate" },
+    { name = "SwitchCycleList", func = toggle.switch_cycle_list_table, desc = "Switch cycle-list-table" },
+    { name = "SwitchCycleBox", func = toggle.switch_cycle_box_table, desc = "Switch cycle-box-table" },
+    { name = "SwitchListBeforeBox", func = toggle.switch_list_before_box, desc = "Switch list-before-box" },
+  }
+
+  for _, cmd in ipairs(switch_commands) do
+    vim.api.nvim_buf_create_user_command(bufnr, "MarkdownToggle" .. cmd.name, cmd.func, {
+      desc = cmd.desc,
+    })
+  end
+end
+
 ---@param config MarkdownToggleConfig
 M.set = function(config)
   local opts = { silent = true, noremap = true }
@@ -10,6 +59,8 @@ M.set = function(config)
     pattern = config.filetypes or { "markdown", "markdown.mdx" },
     callback = function(args)
       opts.buffer = args.buf
+
+      setup_vim_commands(args.buf)
 
       local keymaps = {
         ["<C-q>"] = {
