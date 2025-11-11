@@ -1,8 +1,39 @@
 local M = {}
 
+-- Default keymaps
+local default_keymaps = {
+  toggle = {
+    ["<C-q>"] = "quote",
+    ["<C-l>"] = "list",
+    ["<Leader><C-l>"] = "list_cycle",
+    ["<C-n>"] = "olist",
+    ["<M-x>"] = "checkbox",
+    ["<Leader><M-x>"] = "checkbox_cycle",
+    ["<C-h>"] = "heading",
+  },
+  switch = {
+    ["<Leader>mU"] = "switch_unmarked_only",
+    ["<Leader>mB"] = "switch_blankline_skip",
+    ["<Leader>mH"] = "switch_heading_skip",
+    ["<Leader>mS"] = "switch_auto_samestate",
+    ["<Leader>mL"] = "switch_cycle_list_table",
+    ["<Leader>mX"] = "switch_cycle_box_table",
+    ["<Leader>mC"] = "switch_list_before_box",
+  },
+  autolist = {
+    ["O"] = "autolist_up",
+    ["o"] = "autolist_down",
+    ["<CR>"] = "autolist_cr",
+  },
+}
+
+-- Export default keymaps for use in other modules
+M.default_keymaps = default_keymaps
+
 ---@class MarkdownToggleConfig
 ---@field use_default_keymaps boolean
 ---@field filetypes string[]
+---@field keymap table|nil
 ---@field list_table string[]
 ---@field cycle_list_table boolean
 ---@field box_table string[]
@@ -24,6 +55,8 @@ local config = {
   use_default_keymaps = false,
   -- The keymaps are valid only for these filetypes
   filetypes = { "markdown", "markdown.mdx" },
+  -- User-defined keymaps (nil by default)
+  keymap = nil,
 
   -- The list marks table used in cycle-mode (list_table[1] is used as the default list-mark)
   list_table = { "-", "+", "*", "=" },

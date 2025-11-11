@@ -16,10 +16,16 @@ local list_mark = current_config.list_table[1] and current_config.list_table[1] 
 M.setup = function(user_config)
   current_config = config.set(user_config)
 
+  -- Always setup common keymaps (Vim commands)
+  keymap.setup_common_keymaps(current_config)
+
+  -- Setup keymaps based on configuration
   if current_config.use_default_keymaps then
-    keymap.setup_with_keymap(current_config)
-  else
-    keymap.setup_without_keymap(current_config)
+    -- Use default keymaps
+    keymap.setup_all_keymaps(current_config)
+  elseif current_config.keymap then
+    -- Use user-defined keymaps (toggle, switch, or autolist)
+    keymap.setup_all_keymaps(current_config)
   end
   if current_config.list_table[1] ~= list_mark then list_mark = current_config.list_table[1] end
 end
