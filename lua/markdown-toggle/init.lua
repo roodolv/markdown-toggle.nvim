@@ -259,6 +259,8 @@ local should_continue_recalc = function(line)
 end
 
 -- Find the range of lines that should be recalculated together
+---@param cursor_line_num integer
+---@return integer, integer
 local find_olist_recalc_range = function(cursor_line_num)
   local total_lines = vim.api.nvim_buf_line_count(0)
 
@@ -303,6 +305,8 @@ local get_olist_indent_signature = function(line)
 end
 
 -- Recalculate ordered list numbers in the specified range with same context and indentation
+---@param start_line integer
+---@param end_line integer
 local recalculate_olist_in_range = function(start_line, end_line)
   local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line, false)
   local cursor_line_num = vim.api.nvim_win_get_cursor(0)[1]
@@ -314,7 +318,7 @@ local recalculate_olist_in_range = function(start_line, end_line)
     target_signature = get_olist_indent_signature(cursor_line)
   else
     -- Find the first olist line in range to determine target signature
-    for i, line in ipairs(lines) do
+    for _, line in ipairs(lines) do
       if has_olist(line) or has_obox(line) then
         target_signature = get_olist_indent_signature(line)
         break

@@ -92,7 +92,7 @@ local config = {
   enable_dot_repeat = true,
 }
 
----@param user_config MarkdownToggleConfig
+---@param user_config MarkdownToggleConfig|nil
 M.set = function(user_config)
   if user_config == nil then return config end
   if type(user_config) ~= "table" then error("Configuration error") end
