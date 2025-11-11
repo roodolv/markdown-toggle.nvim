@@ -50,7 +50,16 @@ local setup_vim_commands = function(bufnr)
 end
 
 ---@param config MarkdownToggleConfig
-M.set = function(config)
+M.setup_without_keymap = function(config)
+  vim.api.nvim_create_autocmd("FileType", {
+    desc = "markdown-toggle.nvim keymaps",
+    pattern = config.filetypes or { "markdown", "markdown.mdx" },
+    callback = function(args) setup_vim_commands(args.buf) end,
+  }) -- nvim_create_autocmd
+end
+
+---@param config MarkdownToggleConfig
+M.setup_with_keymap = function(config)
   local opts = { silent = true, noremap = true }
   local toggle = require("markdown-toggle")
 
@@ -58,9 +67,9 @@ M.set = function(config)
     desc = "markdown-toggle.nvim keymaps",
     pattern = config.filetypes or { "markdown", "markdown.mdx" },
     callback = function(args)
-      opts.buffer = args.buf
-
       setup_vim_commands(args.buf)
+
+      opts.buffer = args.buf
 
       local keymaps = {
         ["<C-q>"] = {

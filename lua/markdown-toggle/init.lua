@@ -16,7 +16,11 @@ local list_mark = current_config.list_table[1] and current_config.list_table[1] 
 M.setup = function(user_config)
   current_config = config.set(user_config)
 
-  if current_config.use_default_keymaps then keymap.set(current_config) end
+  if current_config.use_default_keymaps then
+    keymap.setup_with_keymap(current_config)
+  else
+    keymap.setup_without_keymap(current_config)
+  end
   if current_config.list_table[1] ~= list_mark then list_mark = current_config.list_table[1] end
 end
 
