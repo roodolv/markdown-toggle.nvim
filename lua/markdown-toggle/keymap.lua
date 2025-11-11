@@ -4,34 +4,6 @@ local M = {}
 local setup_vim_commands = function(bufnr)
   local toggle = require("markdown-toggle")
 
-  -- Toggle commands with range support and dot-repeat capability
-  local toggle_commands = {
-    { name = "Quote", mode = "quote", desc = "Toggle quote marks" },
-    { name = "List", mode = "list", desc = "Toggle list marks" },
-    { name = "ListCycle", mode = "list_cycle", desc = "Cycle list marks" },
-    { name = "Olist", mode = "olist", desc = "Toggle ordered list marks" },
-    { name = "Checkbox", mode = "checkbox", desc = "Toggle checkbox marks" },
-    { name = "CheckboxCycle", mode = "checkbox_cycle", desc = "Cycle checkbox marks" },
-    { name = "Heading", mode = "heading", desc = "Toggle heading marks" },
-  }
-
-  for _, cmd in ipairs(toggle_commands) do
-    vim.api.nvim_buf_create_user_command(bufnr, "MarkdownToggle" .. cmd.name, function(opts)
-      if opts.range > 0 then
-        -- Visual mode: call the function directly
-        toggle[cmd.mode]()
-      else
-        -- Normal mode: use operatorfunc for dot-repeat support
-        vim.go.operatorfunc = string.format("v:lua.require'markdown-toggle'.%s", cmd.mode)
-        vim.api.nvim_feedkeys("g@l", "n", false)
-      end
-    end, {
-      range = true,
-      desc = cmd.desc,
-    })
-  end
-
-  -- Config switch commands
   local switch_commands = {
     { name = "SwitchUnmarked", func = toggle.switch_unmarked_only, desc = "Switch unmarked-only" },
     { name = "SwitchBlankline", func = toggle.switch_blankline_skip, desc = "Switch blankline-skip" },
