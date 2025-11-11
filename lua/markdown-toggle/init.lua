@@ -613,6 +613,23 @@ local toggle_by_mode = function(toggle_mode)
   end
 end
 
+--- @param toggle_mode ToggleMode
+local should_use_vcount = function(toggle_mode)
+  return toggle_mode == "heading" or toggle_mode == "list_cycle" or toggle_mode == "checkbox_cycle"
+end
+
+--- @param toggle_mode ToggleMode
+local toggle_with_vcount = function(toggle_mode)
+  if should_use_vcount(toggle_mode) then
+    local count = vim.v.count1
+    for _ = 1, count do
+      toggle_by_mode(toggle_mode)
+    end
+  else
+    toggle_by_mode(toggle_mode)
+  end
+end
+
 --[========================================================[
                           Autolist
 --]========================================================]
@@ -669,7 +686,10 @@ end
 --]========================================================]
 -- Setup functions such like: `M.quote()`, `M.quote_dot()`
 local setup_toggle_functions = function(toggle_mode)
-  M[toggle_mode] = function() toggle_by_mode(toggle_mode) end
+  -- Regular function with v:count support
+  M[toggle_mode] = function() toggle_with_vcount(toggle_mode) end
+
+  -- Dot-repeat function (operatorfunc compatible)
   M[toggle_mode .. "_dot"] = function()
     vim.go.operatorfunc = string.format("v:lua.require'markdown-toggle'.%s", toggle_mode)
     return "g@l"
