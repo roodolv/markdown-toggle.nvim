@@ -396,6 +396,7 @@ local has_mark = function(line, toggle_mode)
     or toggle_mode == "list_cycle" and (has_list(line) or has_list(body))
     or toggle_mode == "olist" and (has_olist(line) or has_olist(body) or has_obox(line) or has_obox(body))
     or toggle_mode == "heading" and (has_heading(line) or has_heading(body))
+    or toggle_mode == "heading_toggle" and (has_heading(line) or has_heading(body))
 end
 
 --[========================================================[
@@ -413,9 +414,19 @@ end
 
 --- @param line string
 --- @return string
-local get_toggled_heading = function(line)
+local get_cycled_heading = function(line)
   if has_heading(line) then
     return cycle_heading(line)
+  else
+    return create_heading(line, current_config.heading_table[1])
+  end
+end
+
+--- @param line string
+--- @return string
+local get_toggled_heading = function(line)
+  if has_heading(line) then
+    return remove_heading(line)
   else
     return create_heading(line, current_config.heading_table[1])
   end
@@ -521,7 +532,7 @@ end
 --[========================================================[
                         Toggle Lines
 --]========================================================]
---- @alias ToggleMode "quote" | "list" | "list_cycle" | "olist" | "checkbox" | "checkbox_cycle" | "heading"
+--- @alias ToggleMode "quote" | "list" | "list_cycle" | "olist" | "checkbox" | "checkbox_cycle" | "heading" | "heading_toggle"
 
 --- @param toggle_mode ToggleMode
 --- @param line string
@@ -546,6 +557,8 @@ local get_toggled_line = function(toggle_mode, line)
   elseif toggle_mode == "olist" then
     new_line = get_toggled_olist(sep_quote.body)
   elseif toggle_mode == "heading" then
+    new_line = get_cycled_heading(sep_quote.body)
+  elseif toggle_mode == "heading_toggle" then
     new_line = get_toggled_heading(sep_quote.body)
   else
     error("Invalid toggle mode")
@@ -574,7 +587,7 @@ local toggle_all_lines = function(toggle_mode)
   for i, line in ipairs(lines) do
     repeat
       if toggle_mode ~= "quote" and skip_blankline(line) then break end
-      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and skip_heading(line) then break end
+      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and toggle_mode ~= "heading_toggle" and skip_heading(line) then break end
 
       new_lines[i] = get_toggled_line(toggle_mode, line)
     until true
@@ -594,7 +607,7 @@ local toggle_unmarked_lines = function(toggle_mode)
   for i, line in ipairs(lines) do
     repeat
       if toggle_mode ~= "quote" and skip_blankline(line) then break end
-      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and skip_heading(line) then break end
+      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and toggle_mode ~= "heading_toggle" and skip_heading(line) then break end
       if toggle_mode ~= "quote" and has_mark(line, toggle_mode) then break end
       if toggle_mode == "quote" and has_quote(line) then break end
 
@@ -711,7 +724,7 @@ local setup_toggle_functions = function(toggle_mode)
 end
 
 -- Toggle Functions
-local toggle_modes = { "quote", "list", "list_cycle", "olist", "checkbox", "checkbox_cycle", "heading" }
+local toggle_modes = { "quote", "list", "list_cycle", "olist", "checkbox", "checkbox_cycle", "heading", "heading_toggle" }
 for _, toggle_mode in ipairs(toggle_modes) do
   setup_toggle_functions(toggle_mode)
 end

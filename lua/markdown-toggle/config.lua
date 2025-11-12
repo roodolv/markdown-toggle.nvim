@@ -10,6 +10,7 @@ local default_keymaps = {
     ["<M-x>"] = "checkbox",
     ["<Leader><M-x>"] = "checkbox_cycle",
     ["<C-h>"] = "heading",
+    ["<Leader><C-h>"] = "heading_toggle",
   },
   switch = {
     ["<Leader>mU"] = "switch_unmarked_only",
