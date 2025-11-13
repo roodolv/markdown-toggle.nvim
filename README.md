@@ -49,7 +49,6 @@ Smart and customizable markdown toggling for Neovim. Provides intuitive commands
 ```lua
 {
   "roodolv/markdown-toggle.nvim",
-  ft = "markdown",
   config = function()
     require("markdown-toggle").setup()
   end,
