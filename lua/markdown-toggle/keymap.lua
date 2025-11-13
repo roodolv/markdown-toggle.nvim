@@ -37,10 +37,10 @@ M.setup_all_keymaps = function(config)
   local patterns = config.filetypes or { "markdown", "markdown.mdx" }
 
   -- Use user config or fallback to defaults
-  local user_keymap = config.keymap or {}
-  local toggle_keymaps = user_keymap.toggle or config_module.default_keymaps.toggle
-  local switch_keymaps = user_keymap.switch or config_module.default_keymaps.switch
-  local autolist_keymaps = user_keymap.autolist or config_module.default_keymaps.autolist
+  local user_keymaps = config.keymaps or {}
+  local toggle_keymaps = user_keymaps.toggle or config_module.default_keymaps.toggle
+  local switch_keymaps = user_keymaps.switch or config_module.default_keymaps.switch
+  local autolist_keymaps = user_keymaps.autolist or config_module.default_keymaps.autolist
 
   vim.api.nvim_create_autocmd("FileType", {
     desc = "markdown-toggle.nvim all keymaps",

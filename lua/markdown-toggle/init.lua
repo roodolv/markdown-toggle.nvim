@@ -23,7 +23,7 @@ M.setup = function(user_config)
   if current_config.use_default_keymaps then
     -- Use default keymaps
     keymap.setup_all_keymaps(current_config)
-  elseif current_config.keymap then
+  elseif current_config.keymaps then
     -- Use user-defined keymaps (toggle, switch, or autolist)
     keymap.setup_all_keymaps(current_config)
   end
@@ -587,7 +587,14 @@ local toggle_all_lines = function(toggle_mode)
   for i, line in ipairs(lines) do
     repeat
       if toggle_mode ~= "quote" and skip_blankline(line) then break end
-      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and toggle_mode ~= "heading_toggle" and skip_heading(line) then break end
+      if
+        toggle_mode ~= "quote"
+        and toggle_mode ~= "heading"
+        and toggle_mode ~= "heading_toggle"
+        and skip_heading(line)
+      then
+        break
+      end
 
       new_lines[i] = get_toggled_line(toggle_mode, line)
     until true
@@ -607,7 +614,14 @@ local toggle_unmarked_lines = function(toggle_mode)
   for i, line in ipairs(lines) do
     repeat
       if toggle_mode ~= "quote" and skip_blankline(line) then break end
-      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and toggle_mode ~= "heading_toggle" and skip_heading(line) then break end
+      if
+        toggle_mode ~= "quote"
+        and toggle_mode ~= "heading"
+        and toggle_mode ~= "heading_toggle"
+        and skip_heading(line)
+      then
+        break
+      end
       if toggle_mode ~= "quote" and has_mark(line, toggle_mode) then break end
       if toggle_mode == "quote" and has_quote(line) then break end
 
@@ -724,7 +738,8 @@ local setup_toggle_functions = function(toggle_mode)
 end
 
 -- Toggle Functions
-local toggle_modes = { "quote", "list", "list_cycle", "olist", "checkbox", "checkbox_cycle", "heading", "heading_toggle" }
+local toggle_modes =
+  { "quote", "list", "list_cycle", "olist", "checkbox", "checkbox_cycle", "heading", "heading_toggle" }
 for _, toggle_mode in ipairs(toggle_modes) do
   setup_toggle_functions(toggle_mode)
 end

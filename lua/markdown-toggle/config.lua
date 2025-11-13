@@ -34,7 +34,7 @@ M.default_keymaps = default_keymaps
 ---@class MarkdownToggleConfig
 ---@field use_default_keymaps boolean
 ---@field filetypes string[]
----@field keymap table|nil
+---@field keymaps table|nil
 ---@field list_table string[]
 ---@field cycle_list_table boolean
 ---@field box_table string[]
@@ -57,7 +57,7 @@ local config = {
   -- The keymaps are valid only for these filetypes
   filetypes = { "markdown", "markdown.mdx" },
   -- User-defined keymaps (nil by default)
-  keymap = nil,
+  keymaps = nil,
 
   -- The list marks table used in cycle-mode (list_table[1] is used as the default list-mark)
   list_table = { "-", "+", "*", "=" },
