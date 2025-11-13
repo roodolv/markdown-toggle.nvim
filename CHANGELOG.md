@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.3.0](https://github.com/roodolv/markdown-toggle.nvim/compare/v0.2.0...v0.3.0) (2025-11-13)
+
+### Features
+- **api**: added Vim commands like MarkdownToggleXXX ([#21](https://github.com/roodolv/markdown-toggle.nvim/pull/21))
+- **toggle**: supported vim.v.count for headings, list-cycle, and box-cycle ([#22](https://github.com/roodolv/markdown-toggle.nvim/pull/22))
+- **api**: added `heading_toggle` function to api ([#24](https://github.com/roodolv/markdown-toggle.nvim/pull/24))
+
+### Improvements
+- **keymap**: added setup_all_keymaps() ([#23](https://github.com/roodolv/markdown-toggle.nvim/pull/23))
+
 ## [v0.2.0](https://github.com/roodolv/markdown-toggle.nvim/compare/v0.1.2...v0.2.0) (2025-11-02)
 
 ### Features
