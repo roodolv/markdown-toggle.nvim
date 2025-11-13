@@ -171,22 +171,31 @@ end
                          Checkboxes
 --]========================================================]
 local empty_box = function() return "[ ]" end
+local box_states = function()
+  local pattern = " " -- Always include space
+  for _, state in ipairs(current_config.box_table) do
+    pattern = pattern .. state
+  end
+  return pattern
+end
 
 --------- Normal Checkboxes ---------
 -- NOTE: This regex matches:
 -- group1(whitespace): spaces or quotes
 -- group2(mark): "-", "+", "*", "="
--- group3(state): " ", "x", "~", "!", ">"
-local matched_box = function(line) return line:match("^([%s>]*)([%-%+%*%=])%s%[([ x~!>])%]%s") end
+-- group3(state): dynamically generated from box_table
+local matched_box = function(line) return line:match("^([%s>]*)([%-%+%*%=])%s%[([" .. box_states() .. "])%]%s") end
 local has_box = function(line) return matched_box(line) ~= nil end
 local check_box = function(line)
   return (line:gsub("([%-%+%*%=]%s)%[ %]", "%1[" .. current_config.box_table[1] .. "]", 1))
 end
-local uncheck_box = function(line) return (line:gsub("([%-%+%*%=]%s)%[[x~!>]%]", "%1" .. empty_box(), 1)) end
+local uncheck_box = function(line)
+  return (line:gsub("([%-%+%*%=]%s)%[([" .. box_states() .. "])%]", "%1" .. empty_box(), 1))
+end
 local create_box = function(line, mark)
   return (line:gsub("^([%s>]*)(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
 end
-local remove_box = function(line) return line:gsub("([%s>]*)[%-%+%*%=]%s%[[ x~!>]%]%s", "%1", 1) end
+local remove_box = function(line) return line:gsub("([%s>]*)[%-%+%*%=]%s%[([" .. box_states() .. "])%]%s", "%1", 1) end
 local list_to_box = function(line, mark)
   return (line:gsub("^([%s>]*)[%-%+%*%=]%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
 end
@@ -205,20 +214,22 @@ end
 local cycle_box = function(line, mark)
   local state = cycled_box_state(line)
   if state == "end" then return current_config.list_before_box and box_to_list(line, mark) or uncheck_box(line) end
-  return (line:gsub("(%[)[ x~!>](%])", "%1" .. state .. "%2", 1))
+  return (line:gsub("(%[)([" .. box_states() .. "])(%])", "%1" .. state .. "%3", 1))
 end
 
 --------- Ordered Checkboxes ---------
 -- NOTE: This regex matches ordered-checkbox:
 -- group1(whitespace): spaces or quotes
 -- group2(number): "1", "2", "3", ...
--- group3(state): " ", "x", "~", "!", ">"
-local matched_obox = function(line) return line:match("^([%s>]*)(%d+)%.%s%[([ x~!>])%]%s") end
+-- group3(state): dynamically generated from box_table
+local matched_obox = function(line) return line:match("^([%s>]*)(%d+)%.%s%[([" .. box_states() .. "])%]%s") end
 local has_obox = function(line) return matched_obox(line) ~= nil end
 local check_obox = function(line) return (line:gsub("(%d+%.%s)%[ %]", "%1[" .. current_config.box_table[1] .. "]", 1)) end
-local uncheck_obox = function(line) return (line:gsub("(%d+%.%s)%[[x~!>]%]", "%1" .. empty_box(), 1)) end
+local uncheck_obox = function(line)
+  return (line:gsub("(%d+%.%s)%[([" .. box_states() .. "])%]", "%1" .. empty_box(), 1))
+end
 local create_obox = function(line) return (line:gsub("^([%s>]*)(.*)", "%11. " .. empty_box() .. " %2")) end
-local remove_obox = function(line) return line:gsub("([%s>]*)%d+%.%s%[[ x~!>]%]%s", "%1", 1) end
+local remove_obox = function(line) return line:gsub("([%s>]*)%d+%.%s%[([" .. box_states() .. "])%]%s", "%1", 1) end
 local olist_to_obox = function(line) return (line:gsub("^([%s>]*)(%d+%.%s)(.*)", "%1%2" .. empty_box() .. " %3")) end
 local cycled_obox_state = function(line)
   local states = current_config.box_table
@@ -232,7 +243,7 @@ end
 local cycle_obox = function(line)
   local state = cycled_obox_state(line)
   if state == "end" then return current_config.list_before_box and obox_to_olist(line) or uncheck_obox(line) end
-  return (line:gsub("(%[)[ x~!>](%])", "%1" .. state .. "%2", 1))
+  return (line:gsub("(%[)([" .. box_states() .. "])(%])", "%1" .. state .. "%3", 1))
 end
 
 --[========================================================[
