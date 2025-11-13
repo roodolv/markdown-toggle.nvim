@@ -40,6 +40,22 @@ local switch_option = function(option_name)
   vim.api.nvim_echo({ { string.format("MarkdownToggle: `%s` %s", option_name, status), msg_type } }, true, {})
 end
 
+local list_marks = function()
+  local pattern = ""
+  for _, mark in ipairs(current_config.list_table) do
+    pattern = pattern .. "%" .. mark
+  end
+  return pattern
+end
+
+local box_states = function()
+  local pattern = " " -- Always include space
+  for _, state in ipairs(current_config.box_table) do
+    pattern = pattern .. state
+  end
+  return pattern
+end
+
 --[========================================================[
                            Quotes
 --]========================================================]
@@ -117,21 +133,13 @@ end
 --[========================================================[
                             Lists
 --]========================================================]
-local list_marks = function()
-  local pattern = ""
-  for _, mark in ipairs(current_config.list_table) do
-    pattern = pattern .. "%" .. mark
-  end
-  return pattern
-end
-
 -- NOTE: This regex matches dynamically generated list marks
 local matched_list = function(line) return line:match("^([%s>]*)([" .. list_marks() .. "])%s.*$") end
 local has_list = function(line) return matched_list(line) ~= nil end
 local create_list = function(line, mark) return (line:gsub("^([%s>]*)(.*)", "%1" .. mark .. " %2")) end
 local remove_list = function(line) return (line:gsub("[" .. list_marks() .. "]%s", "", 1)) end
 local box_to_list = function(line, mark)
-  return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s%[[ x~!>]%]%s(.*)", "%1" .. mark .. " %2"))
+  return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s%[[" .. box_states() .. "]%]%s(.*)", "%1" .. mark .. " %2"))
 end
 local olist_to_list = function(line, mark) return (line:gsub("^([%s>]*)%d+%.%s(.*)", "%1" .. mark .. " %2")) end
 
@@ -160,9 +168,11 @@ local create_olist = function(line) return (line:gsub("^([%s>]*)(.*)", "%11. %2"
 local remove_olist = function(line) return line:gsub("([%s>]*)%d+%.%s", "%1", 1) end
 local list_to_olist = function(line) return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s(.*)", "%11. %2")) end
 local box_to_olist = function(line)
-  return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s%[[ x~!>]%]%s(.*)", "%11. %2"))
+  return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s%[[" .. box_states() .. "]%]%s(.*)", "%11. %2"))
 end
-local obox_to_olist = function(line) return (line:gsub("^([%s>]*)(%d+%.%s)%[[ x~!>]%]%s(.*)", "%1%2%3")) end
+local obox_to_olist = function(line)
+  return (line:gsub("^([%s>]*)(%d+%.%s)%[[" .. box_states() .. "]%]%s(.*)", "%1%2%3"))
+end
 
 ---@param olist_mark string 1, 2, 3, ...
 ---@return string
@@ -181,13 +191,6 @@ end
                          Checkboxes
 --]========================================================]
 local empty_box = function() return "[ ]" end
-local box_states = function()
-  local pattern = " " -- Always include space
-  for _, state in ipairs(current_config.box_table) do
-    pattern = pattern .. state
-  end
-  return pattern
-end
 
 --------- Normal Checkboxes ---------
 -- NOTE: This regex matches:
