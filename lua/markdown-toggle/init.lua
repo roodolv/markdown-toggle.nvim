@@ -429,7 +429,7 @@ local has_mark = function(line, toggle_mode)
     or toggle_mode == "checkbox_cycle" and (has_box(body) or has_obox(body))
     or toggle_mode == "list" and has_list(body)
     or toggle_mode == "list_cycle" and has_list(body)
-    or toggle_mode == "olist" and (has_olist(body) or has_obox(body))
+    or toggle_mode == "olist" and (has_obox(body) and current_config.obox_as_olist or has_olist(body) and not has_obox(body))
     or toggle_mode == "heading" and has_heading(body)
     or toggle_mode == "heading_toggle" and has_heading(body)
 end
