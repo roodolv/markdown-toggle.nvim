@@ -422,17 +422,16 @@ local skip_blankline = function(line) return current_config.enable_blankline_ski
 local skip_heading = function(line) return current_config.enable_heading_skip and has_heading(line) end
 local has_mark = function(line, toggle_mode)
   -- Separate a head-of-line quote mark from the rest(body)
-  local body = separate_quote(line).body or line
+  local body = separate_quote(line).body
 
   -- Check if already marked
-  -- PERF: Only `has_box(body)` is needed; remove `has_box(line)`
-  return toggle_mode == "checkbox" and (has_box(line) or has_box(body) or has_obox(line) or has_obox(body))
-    or toggle_mode == "checkbox_cycle" and (has_box(line) or has_box(body) or has_obox(line) or has_obox(body))
-    or toggle_mode == "list" and (has_list(line) or has_list(body))
-    or toggle_mode == "list_cycle" and (has_list(line) or has_list(body))
-    or toggle_mode == "olist" and (has_olist(line) or has_olist(body) or has_obox(line) or has_obox(body))
-    or toggle_mode == "heading" and (has_heading(line) or has_heading(body))
-    or toggle_mode == "heading_toggle" and (has_heading(line) or has_heading(body))
+  return toggle_mode == "checkbox" and (has_box(body) or has_obox(body))
+    or toggle_mode == "checkbox_cycle" and (has_box(body) or has_obox(body))
+    or toggle_mode == "list" and has_list(body)
+    or toggle_mode == "list_cycle" and has_list(body)
+    or toggle_mode == "olist" and (has_olist(body) or has_obox(body))
+    or toggle_mode == "heading" and has_heading(body)
+    or toggle_mode == "heading_toggle" and has_heading(body)
 end
 
 --[========================================================[
