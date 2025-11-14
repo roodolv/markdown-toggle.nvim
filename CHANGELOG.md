@@ -1,5 +1,20 @@
 # Changelog
 
+## [v0.3.1](https://github.com/roodolv/markdown-toggle.nvim/compare/v0.3.0...v0.3.1) (2025-11-14)
+
+### Bug Fixes
+- **checkbox**: supported dynamic regex patterns for box_table ([#27](https://github.com/roodolv/markdown-toggle.nvim/pull/27))
+- **toggle**: rewrote hard-coded regex patterns ([#28](https://github.com/roodolv/markdown-toggle.nvim/pull/28))
+- **olist**: respect obox_as_olist config in has_mark() ([#29](https://github.com/roodolv/markdown-toggle.nvim/pull/29))
+
+### Refactoring
+- **toggle**: simplified fallback expressions in cycled_XXX functions ([540708d](https://github.com/roodolv/markdown-toggle.nvim/commit/540708d65b89a8d1d17589159e4bbd1914957b07))
+- **autolist**: removed redundant target_line variable ([b4aa636](https://github.com/roodolv/markdown-toggle.nvim/commit/b4aa636aca4c4d4f044fffd90a5e40a675bfae21))
+
+### Performance
+- **checkbox**: now caches frequently used config values ([4ee5b8e](https://github.com/roodolv/markdown-toggle.nvim/commit/4ee5b8e203f7933975a0bda31bb8047ec87b864c))
+- **toggle**: removed redundant has_XXX checks in has_mark() ([16d383a](https://github.com/roodolv/markdown-toggle.nvim/commit/16d383a276536912b5cbc1620a28340f5c361177))
+
 ## [v0.3.0](https://github.com/roodolv/markdown-toggle.nvim/compare/v0.2.0...v0.3.0) (2025-11-13)
 
 ### Features
