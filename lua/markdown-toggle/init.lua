@@ -122,14 +122,13 @@ local create_heading = function(line, mark) return (line:gsub("^([%s>]*)(.*)$", 
 local remove_heading = function(line) return line:gsub("#+%s", "", 1) end
 
 local cycled_heading_mark = function(line)
-  local headings = current_config.heading_table and current_config.heading_table
-    or { "#", "##", "###", "####", "#####" }
+  local headings = current_config.heading_table
   local matched = matched_heading(line)
   for i, heading in ipairs(headings) do
     if matched == heading and i < #headings then return headings[i + 1] end
     if matched == headings[#headings] then return "end" end -- At the last element
   end
-  return headings[1] ~= nil and headings[1] or "#"
+  return headings[1]
 end
 local cycle_heading = function(line)
   local mark = cycled_heading_mark(line)
@@ -151,13 +150,13 @@ end
 local olist_to_list = function(line, mark) return (line:gsub("^([%s>]*)%d+%.%s(.*)", "%1" .. mark .. " %2")) end
 
 local cycled_list_mark = function(line)
-  local marks = current_config.list_table and current_config.list_table or { "-" }
+  local marks = current_config.list_table
   local _, matched = matched_list(line)
   for i, mark in ipairs(marks) do
     if matched == mark and i < #marks then return marks[i + 1] end
     if matched == marks[#marks] then return "end" end -- At the last element
   end
-  return marks[1] ~= nil and marks[1] or "-"
+  return marks[1]
 end
 local cycle_list = function(line)
   local mark = cycled_list_mark(line)
@@ -235,7 +234,7 @@ local cycled_box_state = function(line)
     if matched == state and i < #states then return states[i + 1] end
     if matched == states[#states] then return "end" end -- At the last element
   end
-  return states[1] ~= nil and states[1] or " "
+  return states[1]
 end
 local cycle_box = function(line, mark)
   local state = cycled_box_state(line)
@@ -264,7 +263,7 @@ local cycled_obox_state = function(line)
     if matched == state and i < #states then return states[i + 1] end
     if matched == states[#states] then return "end" end -- At the last element
   end
-  return states[1] ~= nil and states[1] or " "
+  return states[1]
 end
 local cycle_obox = function(line)
   local state = cycled_obox_state(line)
