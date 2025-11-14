@@ -723,13 +723,10 @@ local autolist = function(cin)
   -- If a quote mark exists, combine the quote mark with the bol spaces
   if sep_quote.mark and sep_quote.mark ~= "" then new_bol = new_bol .. sep_quote.mark end
 
-  -- If a quote mark exists, the rest of the line is passed as a target
-  local target_line = (sep_quote.mark and sep_quote.mark ~= "") and sep_quote.body or sep_quote.body
-
-  local _, box_mark, box_state = matched_box(target_line)
+  local _, box_mark, box_state = matched_box(sep_quote.body)
   local box = box_state ~= nil and string.format("%s [%s] ", box_mark, box_state) or nil
-  local _, list = matched_list(target_line)
-  local _, olist = matched_olist(target_line)
+  local _, list = matched_list(sep_quote.body)
+  local _, olist = matched_olist(sep_quote.body)
 
   -- stylua: ignore
   if box ~= nil then
