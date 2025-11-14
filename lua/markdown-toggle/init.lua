@@ -176,9 +176,7 @@ local list_to_olist = function(line) return (line:gsub("^([%s>]*)[" .. list_mark
 local box_to_olist = function(line)
   return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s%[[" .. box_states() .. "]%]%s(.*)", "%11. %2"))
 end
-local obox_to_olist = function(line)
-  return (line:gsub("^([%s>]*)(%d+%.%s)%[[" .. box_states() .. "]%]%s(.*)", "%1%2%3"))
-end
+local obox_to_olist = function(line) return (line:gsub("^([%s>]*)(%d+%.%s)%[[" .. box_states() .. "]%]%s(.*)", "%1%2%3")) end
 
 ---@param olist_mark string 1, 2, 3, ...
 ---@return string
@@ -203,26 +201,16 @@ local empty_box = function() return "[ ]" end
 -- group1(whitespace): spaces or quotes
 -- group2(mark): dynamically generated from list_table
 -- group3(state): dynamically generated from box_table
-local matched_box = function(line)
-  return line:match("^([%s>]*)([" .. list_marks() .. "])%s%[([" .. box_states() .. "])%]%s")
-end
+local matched_box = function(line) return line:match("^([%s>]*)([" .. list_marks() .. "])%s%[([" .. box_states() .. "])%]%s") end
 local has_box = function(line) return matched_box(line) ~= nil end
-local check_box = function(line)
-  return (line:gsub("([" .. list_marks() .. "]%s)%[ %]", "%1[" .. checked_state .. "]", 1))
-end
+local check_box = function(line) return (line:gsub("([" .. list_marks() .. "]%s)%[ %]", "%1[" .. checked_state .. "]", 1)) end
 local uncheck_box = function(line)
   return (line:gsub("([" .. list_marks() .. "]%s)%[([" .. box_states() .. "])%]", "%1" .. empty_box(), 1))
 end
-local create_box = function(line, mark)
-  return (line:gsub("^([%s>]*)(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
-end
-local remove_box = function(line)
-  return line:gsub("([%s>]*)[" .. list_marks() .. "]%s%[([" .. box_states() .. "])%]%s", "%1", 1)
-end
+local create_box = function(line, mark) return (line:gsub("^([%s>]*)(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2")) end
+local remove_box = function(line) return line:gsub("([%s>]*)[" .. list_marks() .. "]%s%[([" .. box_states() .. "])%]%s", "%1", 1) end
 local list_to_box = function(line, mark)
-  return (
-    line:gsub("^([%s>]*)[" .. list_marks() .. "]%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2")
-  )
+  return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
 end
 local olist_to_box = function(line, mark)
   return (line:gsub("^([%s>]*)%d+%.%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
@@ -250,9 +238,7 @@ end
 local matched_obox = function(line) return line:match("^([%s>]*)(%d+)%.%s%[([" .. box_states() .. "])%]%s") end
 local has_obox = function(line) return matched_obox(line) ~= nil end
 local check_obox = function(line) return (line:gsub("(%d+%.%s)%[ %]", "%1[" .. checked_state .. "]", 1)) end
-local uncheck_obox = function(line)
-  return (line:gsub("(%d+%.%s)%[([" .. box_states() .. "])%]", "%1" .. empty_box(), 1))
-end
+local uncheck_obox = function(line) return (line:gsub("(%d+%.%s)%[([" .. box_states() .. "])%]", "%1" .. empty_box(), 1)) end
 local create_obox = function(line) return (line:gsub("^([%s>]*)(.*)", "%11. " .. empty_box() .. " %2")) end
 local remove_obox = function(line) return line:gsub("([%s>]*)%d+%.%s%[([" .. box_states() .. "])%]%s", "%1", 1) end
 local olist_to_obox = function(line) return (line:gsub("^([%s>]*)(%d+%.%s)(.*)", "%1%2" .. empty_box() .. " %3")) end
@@ -622,14 +608,7 @@ local toggle_all_lines = function(toggle_mode)
   for i, line in ipairs(lines) do
     repeat
       if toggle_mode ~= "quote" and skip_blankline(line) then break end
-      if
-        toggle_mode ~= "quote"
-        and toggle_mode ~= "heading"
-        and toggle_mode ~= "heading_toggle"
-        and skip_heading(line)
-      then
-        break
-      end
+      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and toggle_mode ~= "heading_toggle" and skip_heading(line) then break end
 
       new_lines[i] = get_toggled_line(toggle_mode, line)
     until true
@@ -649,14 +628,7 @@ local toggle_unmarked_lines = function(toggle_mode)
   for i, line in ipairs(lines) do
     repeat
       if toggle_mode ~= "quote" and skip_blankline(line) then break end
-      if
-        toggle_mode ~= "quote"
-        and toggle_mode ~= "heading"
-        and toggle_mode ~= "heading_toggle"
-        and skip_heading(line)
-      then
-        break
-      end
+      if toggle_mode ~= "quote" and toggle_mode ~= "heading" and toggle_mode ~= "heading_toggle" and skip_heading(line) then break end
       if toggle_mode ~= "quote" and has_mark(line, toggle_mode) then break end
       if toggle_mode == "quote" and has_quote(line) then break end
 
@@ -770,8 +742,7 @@ local setup_toggle_functions = function(toggle_mode)
 end
 
 -- Toggle Functions
-local toggle_modes =
-  { "quote", "list", "list_cycle", "olist", "checkbox", "checkbox_cycle", "heading", "heading_toggle" }
+local toggle_modes = { "quote", "list", "list_cycle", "olist", "checkbox", "checkbox_cycle", "heading", "heading_toggle" }
 for _, toggle_mode in ipairs(toggle_modes) do
   setup_toggle_functions(toggle_mode)
 end
