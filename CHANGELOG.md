@@ -5,7 +5,7 @@
 ### Bug Fixes
 - **checkbox**: supported dynamic regex patterns for box_table ([#27](https://github.com/roodolv/markdown-toggle.nvim/pull/27))
 - **toggle**: rewrote hard-coded regex patterns ([#28](https://github.com/roodolv/markdown-toggle.nvim/pull/28))
-- **olist**: respect obox_as_olist config in has_mark() ([#29](https://github.com/roodolv/markdown-toggle.nvim/pull/29))
+- **olist**: fixed a bug that `obox_as_olist` was ignored in Visual mode ([#29](https://github.com/roodolv/markdown-toggle.nvim/pull/29))
 
 ### Refactoring
 - **toggle**: simplified fallback expressions in cycled_XXX functions ([540708d](https://github.com/roodolv/markdown-toggle.nvim/commit/540708d65b89a8d1d17589159e4bbd1914957b07))
