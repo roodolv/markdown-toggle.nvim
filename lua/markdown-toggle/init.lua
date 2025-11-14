@@ -10,11 +10,19 @@ local keymap = require("markdown-toggle.keymap")
 
 ---@type MarkdownToggleConfig
 local current_config = config.set()
-local list_mark = current_config.list_table[1] and current_config.list_table[1] or "-"
+-- Cache frequently used config values for performance
+local list_mark = current_config.list_table[1]
+local checked_state = current_config.box_table[1]
+
+local update_config_values = function()
+  list_mark = current_config.list_table[1]
+  checked_state = current_config.box_table[1]
+end
 
 ---@param user_config MarkdownToggleConfig
 M.setup = function(user_config)
   current_config = config.set(user_config)
+  update_config_values()
 
   -- Always setup common keymaps (Vim commands)
   keymap.setup_common_keymaps(current_config)
@@ -27,7 +35,6 @@ M.setup = function(user_config)
     -- Use user-defined keymaps (toggle, switch, or autolist)
     keymap.setup_all_keymaps(current_config)
   end
-  if current_config.list_table[1] ~= list_mark then list_mark = current_config.list_table[1] end
 end
 
 ---@param option_name string
@@ -202,7 +209,7 @@ local matched_box = function(line)
 end
 local has_box = function(line) return matched_box(line) ~= nil end
 local check_box = function(line)
-  return (line:gsub("([" .. list_marks() .. "]%s)%[ %]", "%1[" .. current_config.box_table[1] .. "]", 1))
+  return (line:gsub("([" .. list_marks() .. "]%s)%[ %]", "%1[" .. checked_state .. "]", 1))
 end
 local uncheck_box = function(line)
   return (line:gsub("([" .. list_marks() .. "]%s)%[([" .. box_states() .. "])%]", "%1" .. empty_box(), 1))
@@ -243,7 +250,7 @@ end
 -- group3(state): dynamically generated from box_table
 local matched_obox = function(line) return line:match("^([%s>]*)(%d+)%.%s%[([" .. box_states() .. "])%]%s") end
 local has_obox = function(line) return matched_obox(line) ~= nil end
-local check_obox = function(line) return (line:gsub("(%d+%.%s)%[ %]", "%1[" .. current_config.box_table[1] .. "]", 1)) end
+local check_obox = function(line) return (line:gsub("(%d+%.%s)%[ %]", "%1[" .. checked_state .. "]", 1)) end
 local uncheck_obox = function(line)
   return (line:gsub("(%d+%.%s)%[([" .. box_states() .. "])%]", "%1" .. empty_box(), 1))
 end
