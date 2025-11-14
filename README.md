@@ -2,7 +2,7 @@
 
 Smart and customizable markdown toggling for Neovim. Provides intuitive commands for quotes, headings, lists, and checkboxes.
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/roodolv/markdown-toggle.nvim?style=flat-square&logo=github&color=blue)](https://github.com/roodolv/markdown-toggle.nvim/releases)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/roodolv/markdown-toggle.nvim?style=flat-square&logo=github&color=blue&cacheSeconds=86400)](https://github.com/roodolv/markdown-toggle.nvim/releases)
 [![Lua](https://img.shields.io/badge/Made%20with%20Lua-blue.svg)](https://www.lua.org)
 [![Neovim](https://img.shields.io/badge/Neovim-0.10+-green.svg)](https://neovim.io)
 [![License](https://img.shields.io/github/license/roodolv/markdown-toggle.nvim)](LICENSE)
@@ -233,7 +233,7 @@ foo
 
 ## API Reference
 
-| Function | Vim Mode | Description |
+| API Function | Vim Mode | Description |
 |----------|----------|-------------|
 | `quote()` | Normal, Visual | Toggle blockquote |
 | `list()` | Normal, Visual | Toggle bullet list |
@@ -247,16 +247,29 @@ foo
 | `autolist_up/down()` | Normal | Auto-list (`O`/`o`) |
 | `autolist_cr()` | Insert | Auto-list (`<CR>`) |
 
+### Config-switch functions
+
+Config-switch functions have corresponding commands like `:MarkdownToggleSwitchXXX`. 
+
 <details>
 <summary>Config-switch functions</summary>
 
-- `switch_unmarked_only()` - Toggle unmarked-only mode
-- `switch_blankline_skip()` - Toggle blankline skip
-- `switch_heading_skip()` - Toggle heading skip
-- `switch_auto_samestate()` - Toggle auto-samestate
-- `switch_cycle_list_table()` - Toggle list cycling
-- `switch_cycle_box_table()` - Toggle checkbox cycling
-- `switch_list_before_box()` - Toggle list-before-box
+| API Function | Commands | Description |
+|----------|----------|-------------|
+| `switch_unmarked_only()` | `:MarkdownToggleSwitchUnmarked` | Toggle unmarked-line-only mode |
+| `switch_blankline_skip()` | `:MarkdownToggleSwitchBlankline` | Toggle blankline-skip mode |
+| `switch_heading_skip()` | `:MarkdownToggleSwitchHeading` | Toggle heading-skip mode |
+| `switch_auto_samestate()` | `:MarkdownToggleSwitchSamestate` | Toggle same-state mode for autolist |
+| `switch_cycle_list_table()` | `:MarkdownToggleSwitchCycleList` | Toggle list cycling mode |
+| `switch_cycle_box_table()` | `:MarkdownToggleSwitchCycleBox` | Toggle checkbox cycling mode |
+| `switch_list_before_box()` | `:MarkdownToggleSwitchListBeforeBox` | Toggle `list_before_box` |
+| `switch_obox_as_olist()` | To be implemented in `v0.3.2+` | Toggle `obox_as_olist` |
+
+> **Tip**: Try typing `:mkdtlist`, `:mkdtbox`, or `:mdtlist` for faster command completion.
+
+> **Note**: See [For Obsidian Users](#for-obsidian-users) for `list_before_box`.
+
+> **Note**: See [Ordered Checkbox Configuration](#ordered-checkbox-configuration) for `obox_as_olist`.
 
 </details>
 
@@ -311,7 +324,7 @@ If you'd like this plugin to behave like Obsidian, use the following configurati
 | Toggle checkbox status | `checkbox()`, `checkbox_dot()` | `list_before_box = false` |
 | Cycle bullet/checkbox | `checkbox()`, `checkbox_dot()` | `list_before_box = true` |
 
-**Note:** `list_before_box` can be toggled with `switch_list_before_box()`.
+> **Note:** `list_before_box` can be toggled with `switch_list_before_box()`.
 
 <details>
 <summary>Obsidian-like setup example</summary>
