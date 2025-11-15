@@ -20,6 +20,7 @@ local default_keymaps = {
     ["<Leader>mL"] = "switch_cycle_list_table",
     ["<Leader>mX"] = "switch_cycle_box_table",
     ["<Leader>mC"] = "switch_list_before_box",
+    ["<Leader>mO"] = "switch_obox_as_olist",
   },
   autolist = {
     ["O"] = "autolist_up",

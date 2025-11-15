@@ -12,6 +12,7 @@ local setup_vim_commands = function(bufnr)
     { name = "SwitchCycleList", func = toggle.switch_cycle_list_table, desc = "Switch cycle-list-table" },
     { name = "SwitchCycleBox", func = toggle.switch_cycle_box_table, desc = "Switch cycle-box-table" },
     { name = "SwitchListBeforeBox", func = toggle.switch_list_before_box, desc = "Switch list-before-box" },
+    { name = "SwitchOboxAsOlist", func = toggle.switch_obox_as_olist, desc = "Switch obox-as-olist" },
   }
 
   for _, cmd in ipairs(switch_commands) do
