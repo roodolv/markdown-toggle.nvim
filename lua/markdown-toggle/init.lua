@@ -761,5 +761,6 @@ M.switch_auto_samestate = function() switch_option("enable_auto_samestate") end
 M.switch_cycle_list_table = function() switch_option("cycle_list_table") end
 M.switch_cycle_box_table = function() switch_option("cycle_box_table") end
 M.switch_list_before_box = function() switch_option("list_before_box") end
+M.switch_obox_as_olist = function() switch_option("obox_as_olist") end
 
 return M
