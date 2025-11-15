@@ -144,6 +144,42 @@ require("markdown-toggle").setup({
 ```
 </details>
 
+### Default Keymaps
+
+<details>
+<summary>View all default keymaps</summary>
+
+```lua
+keymaps = {
+  toggle = {
+    ["<C-q>"] = "quote",
+    ["<C-l>"] = "list",
+    ["<Leader><C-l>"] = "list_cycle",
+    ["<C-n>"] = "olist",
+    ["<M-x>"] = "checkbox",
+    ["<Leader><M-x>"] = "checkbox_cycle",
+    ["<C-h>"] = "heading",
+    ["<Leader><C-h>"] = "heading_toggle",
+  },
+  switch = {
+    ["<Leader>mU"] = "switch_unmarked_only",
+    ["<Leader>mB"] = "switch_blankline_skip",
+    ["<Leader>mH"] = "switch_heading_skip",
+    ["<Leader>mS"] = "switch_auto_samestate",
+    ["<Leader>mL"] = "switch_cycle_list_table",
+    ["<Leader>mX"] = "switch_cycle_box_table",
+    ["<Leader>mC"] = "switch_list_before_box",
+    ["<Leader>mO"] = "switch_obox_as_olist",
+  },
+  autolist = {
+    ["O"] = "autolist_up",
+    ["o"] = "autolist_down",
+    ["<CR>"] = "autolist_cr",
+  },
+},
+```
+</details>
+
 ### Keymaps Setup
 
 The keymaps table structure:
@@ -164,15 +200,17 @@ keymaps = {
 - `checkbox`, `checkbox_cycle`
 - `heading`, `heading_toggle`
 
+> **Note**: `XXX_dot` functions are automatically configured if `enable_dot_repeat = true`.
+
 **Switch functions:**
 - `switch_blankline_skip`, `switch_heading_skip`
 - `switch_unmarked_only`
 - `switch_auto_samestate`
 - `switch_cycle_list_table`, `switch_cycle_box_table`
-- `switch_list_before_box`
+- `switch_list_before_box`, `switch_obox_as_olist`
 
 **Autolist functions:**
-- `autolist_up` (`O`), `autolist_down` (`o`), `autolist_cr` (`<CR>`)
+- `autolist_up`, `autolist_down`, `autolist_cr`
 
 </details>
 
