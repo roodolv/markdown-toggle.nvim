@@ -121,17 +121,18 @@ require("markdown-toggle").setup({
   use_default_keymaps = false,
   filetypes = { "markdown", "markdown.mdx" },
   keymaps = nil,
-  
+
   list_table = { "-", "+", "*", "=" },
   cycle_list_table = false,
-  
+
   box_table = { "x", "~", "!", ">" },
   cycle_box_table = false,
+
   list_before_box = false,
   obox_as_olist = true,
-  
+
   heading_table = { "#", "##", "###", "####", "#####" },
-  
+
   enable_blankline_skip = true,
   enable_heading_skip = true,
   enable_unmarked_only = true,
@@ -249,7 +250,7 @@ foo
 
 ### Config-switch functions
 
-Config-switch functions have corresponding commands like `:MarkdownToggleSwitchXXX`. 
+Config-switch functions have corresponding commands like `:MarkdownToggleSwitchXXX`.
 
 <details>
 <summary>Config-switch functions</summary>
@@ -263,7 +264,7 @@ Config-switch functions have corresponding commands like `:MarkdownToggleSwitchX
 | `switch_cycle_list_table()` | `:MarkdownToggleSwitchCycleList` | Toggle list cycling mode |
 | `switch_cycle_box_table()` | `:MarkdownToggleSwitchCycleBox` | Toggle checkbox cycling mode |
 | `switch_list_before_box()` | `:MarkdownToggleSwitchListBeforeBox` | Toggle `list_before_box` |
-| `switch_obox_as_olist()` | To be implemented in `v0.3.2+` | Toggle `obox_as_olist` |
+| `switch_obox_as_olist()` | `:MarkdownToggleSwitchOboxAsOlist` | Toggle `obox_as_olist` |
 
 > **Tip**: Try typing `:mkdtlist`, `:mkdtbox`, or `:mdtlist` for faster command completion.
 
