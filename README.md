@@ -208,11 +208,11 @@ foo
 
 **Default** (`cycle_box_table = false`):
 
-`foo` → `- foo` → `- [ ] foo` → `- [x] foo` → `- foo`
+`foo` → `- [ ] foo` → `- [x] foo` → `- [ ] foo`
 
 **Enabled** (`cycle_box_table = true` with `box_table = { "x", "~" }`):
 
-`foo` → `- foo` → `- [ ] foo` → `- [x] foo` → `- [~] foo` → `- foo`
+`foo` → `- [ ] foo` → `- [x] foo` → `- [~] foo` → `- [ ] foo`
 
 <details>
 <summary>Vertical view</summary>
@@ -220,15 +220,13 @@ foo
 ```
 foo
 ↓
-- foo
-↓
 - [ ] foo
 ↓
 - [x] foo
 ↓
 - [~] foo
 ↓
-foo
+- [ ] foo
 ```
 </details>
 
