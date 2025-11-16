@@ -140,7 +140,11 @@ end
                             Lists
 --]========================================================]
 -- NOTE: This regex matches dynamically generated list marks
-local matched_list = function(line) return line:match("^([%s>]*)([" .. list_marks() .. "])%s.*$") end
+-- group1(whitespace): spaces or quotes
+-- group2(mark): dynamically generated from list_table
+-- group3(text): text after - 
+-- group4(trailing): trailing spaces after the text
+local matched_list = function(line) return line:match("^([%s>]*)([" .. list_marks() .. "])%s(.-)(%s*)$") end
 local has_list = function(line) return matched_list(line) ~= nil end
 local create_list = function(line, mark) return (line:gsub("^([%s>]*)(.*)", "%1" .. mark .. " %2")) end
 local remove_list = function(line) return (line:gsub("[" .. list_marks() .. "]%s", "", 1)) end
@@ -168,7 +172,11 @@ end
                         Ordered Lists
 --]========================================================]
 -- NOTE: This regex matches: "1", "2", "3", ...
-local matched_olist = function(line) return line:match("^([%s>]*)(%d+)%.%s") end
+-- group1(whitespace): spaces or quotes
+-- group2(mark): any digit (0-9) before .
+-- group3(text): text after digit and .
+-- group4(trailing): trailing spaces after the text
+local matched_olist = function(line) return line:match("^([%s>]*)(%d+)%.%s(.-)(%s*)$") end
 local has_olist = function(line) return matched_olist(line) ~= nil end
 local create_olist = function(line) return (line:gsub("^([%s>]*)(.*)", "%11. %2")) end
 local remove_olist = function(line) return line:gsub("([%s>]*)%d+%.%s", "%1", 1) end
@@ -201,7 +209,9 @@ local empty_box = function() return "[ ]" end
 -- group1(whitespace): spaces or quotes
 -- group2(mark): dynamically generated from list_table
 -- group3(state): dynamically generated from box_table
-local matched_box = function(line) return line:match("^([%s>]*)([" .. list_marks() .. "])%s%[([" .. box_states() .. "])%]%s") end
+-- group4(text): text after ] 
+-- group5(trailing): trailing spaces after the text
+local matched_box = function(line) return line:match("^([%s>]*)([" .. list_marks() .. "])%s%[([" .. box_states() .. "])%]%s(.-)(%s*)$") end -- Also matches text after mark and state, and trailing spaces
 local has_box = function(line) return matched_box(line) ~= nil end
 local check_box = function(line) return (line:gsub("([" .. list_marks() .. "]%s)%[ %]", "%1[" .. checked_state .. "]", 1)) end
 local uncheck_box = function(line)
@@ -700,23 +710,38 @@ local autolist = function(cin)
   -- If a quote mark exists, combine the quote mark with the bol spaces
   if sep_quote.mark and sep_quote.mark ~= "" then new_bol = new_bol .. sep_quote.mark end
 
-  local _, box_mark, box_state = matched_box(sep_quote.body)
+  local _, box_mark, box_state, box_text, _ = matched_box(sep_quote.body)
   local box = box_state ~= nil and string.format("%s [%s] ", box_mark, box_state) or nil
-  local _, list = matched_list(sep_quote.body)
-  local _, olist = matched_olist(sep_quote.body)
+  local _, list, list_text, _ = matched_list(sep_quote.body)
+  local _, olist, olist_text, _ = matched_olist(sep_quote.body)
 
   -- stylua: ignore
   if box ~= nil then
     if not current_config.enable_auto_samestate then
       box = string.format("%s %s ", box_mark, empty_box())
     end
-    vim.api.nvim_feedkeys(cin .. new_bol .. box, "n", false)
+
+    -- If the string has matched the regex and the text is empty, it means that everything after - [ ] is empty 
+    -- (no matter how many trailing spaces there are)
+    if box_text == "" then
+      util.empty_current_line()
+    else
+      vim.api.nvim_feedkeys(cin .. new_bol .. box, "n", false)
+    end
   elseif list ~= nil then
     list = list .. " "
-    vim.api.nvim_feedkeys(cin .. new_bol .. list, "n", false)
+    if list_text == "" then
+      util.empty_current_line()
+    else
+      vim.api.nvim_feedkeys(cin .. new_bol .. list, "n", false)
+    end
   elseif olist ~= nil then
     olist = (cin == "O") and decrement_olist(olist) or increment_olist(olist)
-    vim.api.nvim_feedkeys(cin .. new_bol .. olist, "n", false)
+    if olist_text == "" then
+      util.empty_current_line()
+    else
+      vim.api.nvim_feedkeys(cin .. new_bol .. olist, "n", false)
+    end
 
     -- Trigger recalculation after autolist creates olist (delayed)
     if current_config.enable_olist_recalc then

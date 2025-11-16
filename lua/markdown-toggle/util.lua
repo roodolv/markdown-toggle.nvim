@@ -34,4 +34,12 @@ M.echo_exec_time = function(timestamp)
   vim.api.nvim_echo({ { ("Elapsed: %.6f ms"):format(elapsed_ns / 1e6), "None" } }, true, {})
 end
 
+-- Empties the current line, moves the cursor to the
+-- start of the line and enters in insert mode
+M.empty_current_line = function()
+  local cursor_line_num = vim.fn.line(".")
+  vim.api.nvim_buf_set_lines(0, cursor_line_num - 1, cursor_line_num, false, {""})
+  vim.cmd("normal! ^i")
+end
+
 return M
