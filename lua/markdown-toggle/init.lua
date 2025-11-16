@@ -258,12 +258,18 @@ local cycle_obox = function(line)
 end
 
 --[========================================================[
+                         Code Blocks
+--]========================================================]
+local matched_codeblock = function(line) return line:match("^(```)") end
+local has_codeblock = function(line) return matched_codeblock(line) ~= nil end
+
+--[========================================================[
                   Ordered List Recalculation
 --]========================================================]
 -- Check if recalculation should continue for this line
 local should_continue_recalc = function(line)
-  -- Heading lines stop recalculation immediately
-  if has_heading(line) then return false end
+  -- Heading or code block lines stop recalculation immediately
+  if has_heading(line) or has_codeblock(line) then return false end
 
   -- Quote lines: continue only if they contain list/olist/checkbox/obox marks
   if has_quote(line) then
