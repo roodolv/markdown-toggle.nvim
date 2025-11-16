@@ -10,13 +10,31 @@ local keymap = require("markdown-toggle.keymap")
 
 ---@type MarkdownToggleConfig
 local current_config = config.set()
--- Cache frequently used config values for performance
-local list_mark = current_config.list_table[1]
-local checked_state = current_config.box_table[1]
+
+-- Cache frequently used config values
+local list_marks = "" -- Regex pattern for list marks
+local box_states = " " -- Regex pattern for box states
+local list_mark = current_config.list_table[1] -- Default list mark
+local checked_state = current_config.box_table[1] -- Default checked box state
+local heading_mark = current_config.heading_table[1] -- Default heading mark
+
+-- Generate regex patterns from config tables
+local generate_patterns = function()
+  list_marks = ""
+  for _, mark in ipairs(current_config.list_table) do
+    list_marks = list_marks .. "%" .. mark
+  end
+  box_states = " "
+  for _, state in ipairs(current_config.box_table) do
+    box_states = box_states .. state
+  end
+end
 
 local update_config_values = function()
+  generate_patterns()
   list_mark = current_config.list_table[1]
   checked_state = current_config.box_table[1]
+  heading_mark = current_config.heading_table[1]
 end
 
 ---@param user_config MarkdownToggleConfig
@@ -45,22 +63,6 @@ local switch_option = function(option_name)
   local status = current_config[option_name] and "enabled" or "disabled"
   local msg_type = current_config[option_name] and "None" or "WarningMsg"
   vim.api.nvim_echo({ { string.format("MarkdownToggle: `%s` %s", option_name, status), msg_type } }, true, {})
-end
-
-local list_marks = function()
-  local pattern = ""
-  for _, mark in ipairs(current_config.list_table) do
-    pattern = pattern .. "%" .. mark
-  end
-  return pattern
-end
-
-local box_states = function()
-  local pattern = " " -- Always include space
-  for _, state in ipairs(current_config.box_table) do
-    pattern = pattern .. state
-  end
-  return pattern
 end
 
 --[========================================================[
@@ -118,7 +120,7 @@ end
 --]========================================================]
 local matched_heading = function(line) return line:match("^[%s>]*(#+)%s") end
 local has_heading = function(line) return matched_heading(line) ~= nil end
-local create_heading = function(line, mark) return (line:gsub("^([%s>]*)(.*)$", "%1" .. mark .. " %2")) end
+local create_heading = function(line) return (line:gsub("^([%s>]*)(.*)$", "%1" .. heading_mark .. " %2")) end
 local remove_heading = function(line) return line:gsub("#+%s", "", 1) end
 
 local cycled_heading_mark = function(line)
@@ -140,14 +142,14 @@ end
                             Lists
 --]========================================================]
 -- NOTE: This regex matches dynamically generated list marks
-local matched_list = function(line) return line:match("^([%s>]*)([" .. list_marks() .. "])%s.*$") end
+local matched_list = function(line) return line:match("^([%s>]*)([" .. list_marks .. "])%s.*$") end
 local has_list = function(line) return matched_list(line) ~= nil end
-local create_list = function(line, mark) return (line:gsub("^([%s>]*)(.*)", "%1" .. mark .. " %2")) end
-local remove_list = function(line) return (line:gsub("[" .. list_marks() .. "]%s", "", 1)) end
-local box_to_list = function(line, mark)
-  return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s%[[" .. box_states() .. "]%]%s(.*)", "%1" .. mark .. " %2"))
+local create_list = function(line) return (line:gsub("^([%s>]*)(.*)", "%1" .. list_mark .. " %2")) end
+local remove_list = function(line) return (line:gsub("[" .. list_marks .. "]%s", "", 1)) end
+local box_to_list = function(line)
+  return (line:gsub("^([%s>]*)[" .. list_marks .. "]%s%[[" .. box_states .. "]%]%s(.*)", "%1" .. list_mark .. " %2"))
 end
-local olist_to_list = function(line, mark) return (line:gsub("^([%s>]*)%d+%.%s(.*)", "%1" .. mark .. " %2")) end
+local olist_to_list = function(line) return (line:gsub("^([%s>]*)%d+%.%s(.*)", "%1" .. list_mark .. " %2")) end
 
 local cycled_list_mark = function(line)
   local marks = current_config.list_table
@@ -161,7 +163,7 @@ end
 local cycle_list = function(line)
   local mark = cycled_list_mark(line)
   if mark == "end" then return remove_list(line) end
-  return (line:gsub("[" .. list_marks() .. "]", mark, 1))
+  return (line:gsub("[" .. list_marks .. "]", mark, 1))
 end
 
 --[========================================================[
@@ -172,11 +174,9 @@ local matched_olist = function(line) return line:match("^([%s>]*)(%d+)%.%s") end
 local has_olist = function(line) return matched_olist(line) ~= nil end
 local create_olist = function(line) return (line:gsub("^([%s>]*)(.*)", "%11. %2")) end
 local remove_olist = function(line) return line:gsub("([%s>]*)%d+%.%s", "%1", 1) end
-local list_to_olist = function(line) return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s(.*)", "%11. %2")) end
-local box_to_olist = function(line)
-  return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s%[[" .. box_states() .. "]%]%s(.*)", "%11. %2"))
-end
-local obox_to_olist = function(line) return (line:gsub("^([%s>]*)(%d+%.%s)%[[" .. box_states() .. "]%]%s(.*)", "%1%2%3")) end
+local list_to_olist = function(line) return (line:gsub("^([%s>]*)[" .. list_marks .. "]%s(.*)", "%11. %2")) end
+local box_to_olist = function(line) return (line:gsub("^([%s>]*)[" .. list_marks .. "]%s%[[" .. box_states .. "]%]%s(.*)", "%11. %2")) end
+local obox_to_olist = function(line) return (line:gsub("^([%s>]*)(%d+%.%s)%[[" .. box_states .. "]%]%s(.*)", "%1%2%3")) end
 
 ---@param olist_mark string 1, 2, 3, ...
 ---@return string
@@ -201,19 +201,17 @@ local empty_box = function() return "[ ]" end
 -- group1(whitespace): spaces or quotes
 -- group2(mark): dynamically generated from list_table
 -- group3(state): dynamically generated from box_table
-local matched_box = function(line) return line:match("^([%s>]*)([" .. list_marks() .. "])%s%[([" .. box_states() .. "])%]%s") end
+local matched_box = function(line) return line:match("^([%s>]*)([" .. list_marks .. "])%s%[([" .. box_states .. "])%]%s") end
 local has_box = function(line) return matched_box(line) ~= nil end
-local check_box = function(line) return (line:gsub("([" .. list_marks() .. "]%s)%[ %]", "%1[" .. checked_state .. "]", 1)) end
-local uncheck_box = function(line)
-  return (line:gsub("([" .. list_marks() .. "]%s)%[([" .. box_states() .. "])%]", "%1" .. empty_box(), 1))
+local check_box = function(line) return (line:gsub("([" .. list_marks .. "]%s)%[ %]", "%1[" .. checked_state .. "]", 1)) end
+local uncheck_box = function(line) return (line:gsub("([" .. list_marks .. "]%s)%[([" .. box_states .. "])%]", "%1" .. empty_box(), 1)) end
+local create_box = function(line) return (line:gsub("^([%s>]*)(.*)", "%1" .. string.format("%s %s ", list_mark, empty_box()) .. "%2")) end
+local remove_box = function(line) return line:gsub("([%s>]*)[" .. list_marks .. "]%s%[([" .. box_states .. "])%]%s", "%1", 1) end
+local list_to_box = function(line)
+  return (line:gsub("^([%s>]*)[" .. list_marks .. "]%s(.*)", "%1" .. string.format("%s %s ", list_mark, empty_box()) .. "%2"))
 end
-local create_box = function(line, mark) return (line:gsub("^([%s>]*)(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2")) end
-local remove_box = function(line) return line:gsub("([%s>]*)[" .. list_marks() .. "]%s%[([" .. box_states() .. "])%]%s", "%1", 1) end
-local list_to_box = function(line, mark)
-  return (line:gsub("^([%s>]*)[" .. list_marks() .. "]%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
-end
-local olist_to_box = function(line, mark)
-  return (line:gsub("^([%s>]*)%d+%.%s(.*)", "%1" .. string.format("%s %s ", mark, empty_box()) .. "%2"))
+local olist_to_box = function(line)
+  return (line:gsub("^([%s>]*)%d+%.%s(.*)", "%1" .. string.format("%s %s ", list_mark, empty_box()) .. "%2"))
 end
 local cycled_box_state = function(line)
   local states = current_config.box_table
@@ -224,10 +222,10 @@ local cycled_box_state = function(line)
   end
   return states[1]
 end
-local cycle_box = function(line, mark)
+local cycle_box = function(line)
   local state = cycled_box_state(line)
-  if state == "end" then return current_config.list_before_box and box_to_list(line, mark) or uncheck_box(line) end
-  return (line:gsub("(%[)([" .. box_states() .. "])(%])", "%1" .. state .. "%3", 1))
+  if state == "end" then return current_config.list_before_box and box_to_list(line) or uncheck_box(line) end
+  return (line:gsub("(%[)([" .. box_states .. "])(%])", "%1" .. state .. "%3", 1))
 end
 
 --------- Ordered Checkboxes ---------
@@ -235,12 +233,12 @@ end
 -- group1(whitespace): spaces or quotes
 -- group2(number): "1", "2", "3", ...
 -- group3(state): dynamically generated from box_table
-local matched_obox = function(line) return line:match("^([%s>]*)(%d+)%.%s%[([" .. box_states() .. "])%]%s") end
+local matched_obox = function(line) return line:match("^([%s>]*)(%d+)%.%s%[([" .. box_states .. "])%]%s") end
 local has_obox = function(line) return matched_obox(line) ~= nil end
 local check_obox = function(line) return (line:gsub("(%d+%.%s)%[ %]", "%1[" .. checked_state .. "]", 1)) end
-local uncheck_obox = function(line) return (line:gsub("(%d+%.%s)%[([" .. box_states() .. "])%]", "%1" .. empty_box(), 1)) end
+local uncheck_obox = function(line) return (line:gsub("(%d+%.%s)%[([" .. box_states .. "])%]", "%1" .. empty_box(), 1)) end
 local create_obox = function(line) return (line:gsub("^([%s>]*)(.*)", "%11. " .. empty_box() .. " %2")) end
-local remove_obox = function(line) return line:gsub("([%s>]*)%d+%.%s%[([" .. box_states() .. "])%]%s", "%1", 1) end
+local remove_obox = function(line) return line:gsub("([%s>]*)%d+%.%s%[([" .. box_states .. "])%]%s", "%1", 1) end
 local olist_to_obox = function(line) return (line:gsub("^([%s>]*)(%d+%.%s)(.*)", "%1%2" .. empty_box() .. " %3")) end
 local cycled_obox_state = function(line)
   local states = current_config.box_table
@@ -254,7 +252,7 @@ end
 local cycle_obox = function(line)
   local state = cycled_obox_state(line)
   if state == "end" then return current_config.list_before_box and obox_to_olist(line) or uncheck_obox(line) end
-  return (line:gsub("(%[)([" .. box_states() .. "])(%])", "%1" .. state .. "%3", 1))
+  return (line:gsub("(%[)([" .. box_states .. "])(%])", "%1" .. state .. "%3", 1))
 end
 
 --[========================================================[
@@ -445,7 +443,7 @@ local get_cycled_heading = function(line)
   if has_heading(line) then
     return cycle_heading(line)
   else
-    return create_heading(line, current_config.heading_table[1])
+    return create_heading(line)
   end
 end
 
@@ -455,7 +453,7 @@ local get_toggled_heading = function(line)
   if has_heading(line) then
     return remove_heading(line)
   else
-    return create_heading(line, current_config.heading_table[1])
+    return create_heading(line)
   end
 end
 
@@ -463,13 +461,13 @@ end
 --- @return string
 local get_toggled_list = function(line)
   if has_box(line) then
-    return box_to_list(line, list_mark)
+    return box_to_list(line)
   elseif has_list(line) then
     return current_config.cycle_list_table and cycle_list(line) or remove_list(line)
   elseif has_olist(line) then
-    return olist_to_list(line, list_mark)
+    return olist_to_list(line)
   else
-    return create_list(line, list_mark)
+    return create_list(line)
   end
 end
 
@@ -477,13 +475,13 @@ end
 --- @return string
 local get_cycled_list = function(line)
   if has_box(line) then
-    return box_to_list(line, list_mark)
+    return box_to_list(line)
   elseif has_list(line) then
     return cycle_list(line)
   elseif has_olist(line) then
-    return olist_to_list(line, list_mark)
+    return olist_to_list(line)
   else
-    return create_list(line, list_mark)
+    return create_list(line)
   end
 end
 
@@ -519,19 +517,19 @@ local get_toggled_box = function(line)
   if state == " " then
     return check_box(line)
   elseif state ~= nil then
-    return current_config.list_before_box and box_to_list(line, list_mark) or uncheck_box(line)
+    return current_config.list_before_box and box_to_list(line) or uncheck_box(line)
   elseif ostate == " " then
     return check_obox(line)
   elseif ostate ~= nil then
     return current_config.list_before_box and obox_to_olist(line) or uncheck_obox(line)
   elseif has_list(line) then
-    return list_to_box(line, list_mark)
+    return list_to_box(line)
   elseif has_olist(line) then
-    -- return olist_to_box(line, list_mark)
+    -- return olist_to_box(line)
     return olist_to_obox(line) -- NOTE: same as Obsidian
   else
     -- If `list_before_box` is true, a bullet list is toggled first.
-    return current_config.list_before_box and create_list(line, list_mark) or create_box(line, list_mark)
+    return current_config.list_before_box and create_list(line) or create_box(line)
   end
 end
 
@@ -542,17 +540,17 @@ local get_cycled_box = function(line)
   local _, _, ostate = matched_obox(line)
 
   if state ~= nil then
-    return cycle_box(line, list_mark)
+    return cycle_box(line)
   elseif ostate ~= nil then
     return cycle_obox(line)
   elseif has_list(line) then
-    return list_to_box(line, list_mark)
+    return list_to_box(line)
   elseif has_olist(line) then
-    -- return olist_to_box(line, list_mark)
+    -- return olist_to_box(line)
     return olist_to_obox(line) -- NOTE: same as Obsidian
   else
     -- If `list_before_box` is true, a bullet list is toggled first.
-    return current_config.list_before_box and create_list(line, list_mark) or create_box(line, list_mark)
+    return current_config.list_before_box and create_list(line) or create_box(line)
   end
 end
 
