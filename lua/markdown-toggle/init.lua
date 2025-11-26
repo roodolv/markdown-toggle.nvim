@@ -144,7 +144,7 @@ end
 -- NOTE: This regex matches dynamically generated list marks
 -- group1(whitespace): spaces or quotes
 -- group2(mark): dynamically generated from list_table
--- group3(text): text after - 
+-- group3(text): text after -
 -- group4(trailing): trailing spaces after the text
 local matched_list = function(line) return line:match("^([%s>]*)([" .. list_marks .. "])%s(.-)(%s*)$") end
 local has_list = function(line) return matched_list(line) ~= nil end
@@ -209,7 +209,7 @@ local empty_box = function() return "[ ]" end
 -- group1(whitespace): spaces or quotes
 -- group2(mark): dynamically generated from list_table
 -- group3(state): dynamically generated from box_table
--- group4(text): text after ] 
+-- group4(text): text after ]
 -- group5(trailing): trailing spaces after the text
 local matched_box = function(line) return line:match("^([%s>]*)([" .. list_marks .. "])%s%[([" .. box_states .. "])%]%s(.-)(%s*)$") end -- Also matches text after mark and state, and trailing spaces
 local has_box = function(line) return matched_box(line) ~= nil end
@@ -692,6 +692,22 @@ local toggle_with_vcount = function(toggle_mode)
   end
 end
 
+---@param cin string character input
+---@param is_blank boolean whether the line is blank
+local clear_and_insert = function(cin, is_blank)
+  vim.api.nvim_set_current_line("") -- Clear current line
+
+  if cin == "o" or cin == "O" then
+    vim.api.nvim_feedkeys(cin, "n", false)
+  elseif cin == util.get_eol() then
+    if is_blank then
+      vim.api.nvim_feedkeys(cin, "n", false)
+    else
+      vim.cmd("startinsert")
+    end
+  end
+end
+
 --[========================================================[
                           Autolist
 --]========================================================]
@@ -719,24 +735,22 @@ local autolist = function(cin)
       box = string.format("%s %s ", box_mark, empty_box())
     end
 
-    -- If the string has matched the regex and the text is empty, it means that everything after - [ ] is empty 
-    -- (no matter how many trailing spaces there are)
     if box_text == "" then
-      util.empty_current_line()
+      clear_and_insert(cin, is_blankline(line))
     else
       vim.api.nvim_feedkeys(cin .. new_bol .. box, "n", false)
     end
   elseif list ~= nil then
     list = list .. " "
     if list_text == "" then
-      util.empty_current_line()
+      clear_and_insert(cin, is_blankline(line))
     else
       vim.api.nvim_feedkeys(cin .. new_bol .. list, "n", false)
     end
   elseif olist ~= nil then
     olist = (cin == "O") and decrement_olist(olist) or increment_olist(olist)
     if olist_text == "" then
-      util.empty_current_line()
+      clear_and_insert(cin, is_blankline(line))
     else
       vim.api.nvim_feedkeys(cin .. new_bol .. olist, "n", false)
     end
@@ -747,11 +761,16 @@ local autolist = function(cin)
         trigger_olist_recalc()
       end)
     end
-  elseif sep_quote.mark then
-    -- In the case of quote-only
-    vim.api.nvim_feedkeys(cin .. new_bol, "n", false)
+  elseif sep_quote.mark ~= "" then
+    -- Check if quote body is empty (only whitespace)
+    local quote_text = sep_quote.body:match("^(.-)%s*$")
+    if quote_text == "" then
+      clear_and_insert(cin, is_blankline(line))
+    else
+      vim.api.nvim_feedkeys(cin .. new_bol, "n", false)
+    end
   else
-    vim.api.nvim_feedkeys(cin, "n", false) -- As usual
+    vim.api.nvim_feedkeys(cin, "n", false)
   end
 end
 
