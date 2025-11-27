@@ -142,7 +142,11 @@ end
                             Lists
 --]========================================================]
 -- NOTE: This regex matches dynamically generated list marks
-local matched_list = function(line) return line:match("^([%s>]*)([" .. list_marks .. "])%s.*$") end
+-- group1(whitespace): spaces or quotes
+-- group2(mark): dynamically generated from list_table
+-- group3(text): text after -
+-- group4(trailing): trailing spaces after the text
+local matched_list = function(line) return line:match("^([%s>]*)([" .. list_marks .. "])%s(.-)(%s*)$") end
 local has_list = function(line) return matched_list(line) ~= nil end
 local create_list = function(line) return (line:gsub("^([%s>]*)(.*)", "%1" .. list_mark .. " %2")) end
 local remove_list = function(line) return (line:gsub("[" .. list_marks .. "]%s", "", 1)) end
@@ -170,7 +174,11 @@ end
                         Ordered Lists
 --]========================================================]
 -- NOTE: This regex matches: "1", "2", "3", ...
-local matched_olist = function(line) return line:match("^([%s>]*)(%d+)%.%s") end
+-- group1(whitespace): spaces or quotes
+-- group2(mark): any digit (0-9) before .
+-- group3(text): text after digit and .
+-- group4(trailing): trailing spaces after the text
+local matched_olist = function(line) return line:match("^([%s>]*)(%d+)%.%s(.-)(%s*)$") end
 local has_olist = function(line) return matched_olist(line) ~= nil end
 local create_olist = function(line) return (line:gsub("^([%s>]*)(.*)", "%11. %2")) end
 local remove_olist = function(line) return line:gsub("([%s>]*)%d+%.%s", "%1", 1) end
@@ -201,7 +209,9 @@ local empty_box = function() return "[ ]" end
 -- group1(whitespace): spaces or quotes
 -- group2(mark): dynamically generated from list_table
 -- group3(state): dynamically generated from box_table
-local matched_box = function(line) return line:match("^([%s>]*)([" .. list_marks .. "])%s%[([" .. box_states .. "])%]%s") end
+-- group4(text): text after ]
+-- group5(trailing): trailing spaces after the text
+local matched_box = function(line) return line:match("^([%s>]*)([" .. list_marks .. "])%s%[([" .. box_states .. "])%]%s(.-)(%s*)$") end -- Also matches text after mark and state, and trailing spaces
 local has_box = function(line) return matched_box(line) ~= nil end
 local check_box = function(line) return (line:gsub("([" .. list_marks .. "]%s)%[ %]", "%1[" .. checked_state .. "]", 1)) end
 local uncheck_box = function(line) return (line:gsub("([" .. list_marks .. "]%s)%[([" .. box_states .. "])%]", "%1" .. empty_box(), 1)) end
@@ -682,11 +692,48 @@ local toggle_with_vcount = function(toggle_mode)
   end
 end
 
+---@param cin string character input
+---@param is_blank boolean whether the line is blank
+---@param clear_and_newline boolean whether to add a new line when cin is "o" or "O"
+local clear_and_insert = function(cin, is_blank, clear_and_newline)
+  local cursor_line_num = vim.api.nvim_win_get_cursor(0)[1]
+
+  if cin == "o" then
+    vim.api.nvim_set_current_line("")
+
+    if clear_and_newline then
+      vim.api.nvim_buf_set_lines(0, cursor_line_num, cursor_line_num, false, { "" })
+      vim.api.nvim_win_set_cursor(0, { cursor_line_num + 1, 0 })
+    else
+      vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
+    end
+
+    vim.cmd("startinsert")
+  elseif cin == "O" then
+    vim.api.nvim_set_current_line("")
+
+    if clear_and_newline then
+      vim.api.nvim_buf_set_lines(0, cursor_line_num - 1, cursor_line_num - 1, false, { "" })
+    end
+    vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
+    vim.cmd("startinsert")
+  elseif cin == util.get_eol() then
+    vim.api.nvim_set_current_line("")
+    if is_blank then
+      vim.api.nvim_feedkeys(cin, "n", false)
+    else
+      vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
+      vim.cmd("startinsert")
+    end
+  end
+end
+
 --[========================================================[
                           Autolist
 --]========================================================]
 ---@param cin string character input
-local autolist = function(cin)
+---@param clear_and_newline boolean whether to add a new line when cin is "o" or "O"
+local autolist = function(cin, clear_and_newline)
   local line = vim.api.nvim_get_current_line()
 
   -- First, separate quote marks from the entire line (preserving leading spaces)
@@ -698,23 +745,36 @@ local autolist = function(cin)
   -- If a quote mark exists, combine the quote mark with the bol spaces
   if sep_quote.mark and sep_quote.mark ~= "" then new_bol = new_bol .. sep_quote.mark end
 
-  local _, box_mark, box_state = matched_box(sep_quote.body)
+  local _, box_mark, box_state, box_text, _ = matched_box(sep_quote.body)
   local box = box_state ~= nil and string.format("%s [%s] ", box_mark, box_state) or nil
-  local _, list = matched_list(sep_quote.body)
-  local _, olist = matched_olist(sep_quote.body)
+  local _, list, list_text, _ = matched_list(sep_quote.body)
+  local _, olist, olist_text, _ = matched_olist(sep_quote.body)
 
   -- stylua: ignore
   if box ~= nil then
     if not current_config.enable_auto_samestate then
       box = string.format("%s %s ", box_mark, empty_box())
     end
-    vim.api.nvim_feedkeys(cin .. new_bol .. box, "n", false)
+
+    if box_text == "" then
+      clear_and_insert(cin, is_blankline(line), clear_and_newline)
+    else
+      vim.api.nvim_feedkeys(cin .. new_bol .. box, "n", false)
+    end
   elseif list ~= nil then
     list = list .. " "
-    vim.api.nvim_feedkeys(cin .. new_bol .. list, "n", false)
+    if list_text == "" then
+      clear_and_insert(cin, is_blankline(line), clear_and_newline)
+    else
+      vim.api.nvim_feedkeys(cin .. new_bol .. list, "n", false)
+    end
   elseif olist ~= nil then
     olist = (cin == "O") and decrement_olist(olist) or increment_olist(olist)
-    vim.api.nvim_feedkeys(cin .. new_bol .. olist, "n", false)
+    if olist_text == "" then
+      clear_and_insert(cin, is_blankline(line), clear_and_newline)
+    else
+      vim.api.nvim_feedkeys(cin .. new_bol .. olist, "n", false)
+    end
 
     -- Trigger recalculation after autolist creates olist (delayed)
     if current_config.enable_olist_recalc then
@@ -722,11 +782,16 @@ local autolist = function(cin)
         trigger_olist_recalc()
       end)
     end
-  elseif sep_quote.mark then
-    -- In the case of quote-only
-    vim.api.nvim_feedkeys(cin .. new_bol, "n", false)
+  elseif sep_quote.mark ~= "" then
+    -- Check if quote body is empty (only whitespace)
+    local quote_text = sep_quote.body:match("^(.-)%s*$")
+    if quote_text == "" then
+      clear_and_insert(cin, is_blankline(line), clear_and_newline)
+    else
+      vim.api.nvim_feedkeys(cin .. new_bol, "n", false)
+    end
   else
-    vim.api.nvim_feedkeys(cin, "n", false) -- As usual
+    vim.api.nvim_feedkeys(cin, "n", false)
   end
 end
 
@@ -752,9 +817,9 @@ for _, toggle_mode in ipairs(toggle_modes) do
 end
 
 -- Autolist
-M.autolist_up = function() autolist("O") end
-M.autolist_down = function() autolist("o") end
-M.autolist_cr = function() autolist(util.get_eol()) end
+M.autolist_up = function() autolist("O", current_config.autolist_clear_and_newline) end
+M.autolist_down = function() autolist("o", current_config.autolist_clear_and_newline) end
+M.autolist_cr = function() autolist(util.get_eol(), current_config.autolist_clear_and_newline) end
 
 -- Config-switch
 M.switch_blankline_skip = function() switch_option("enable_blankline_skip") end
