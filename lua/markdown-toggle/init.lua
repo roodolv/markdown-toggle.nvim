@@ -694,15 +694,35 @@ end
 
 ---@param cin string character input
 ---@param is_blank boolean whether the line is blank
-local clear_and_insert = function(cin, is_blank)
-  vim.api.nvim_set_current_line("") -- Clear current line
+---@param clear_and_newline boolean whether to add a new line when cin is "o" or "O"
+local clear_and_insert = function(cin, is_blank, clear_and_newline)
+  local cursor_line_num = vim.api.nvim_win_get_cursor(0)[1]
 
-  if cin == "o" or cin == "O" then
-    vim.api.nvim_feedkeys(cin, "n", false)
+  if cin == "o" then
+    vim.api.nvim_set_current_line("")
+
+    if clear_and_newline then
+      vim.api.nvim_buf_set_lines(0, cursor_line_num, cursor_line_num, false, { "" })
+      vim.api.nvim_win_set_cursor(0, { cursor_line_num + 1, 0 })
+    else
+      vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
+    end
+
+    vim.cmd("startinsert")
+  elseif cin == "O" then
+    vim.api.nvim_set_current_line("")
+
+    if clear_and_newline then
+      vim.api.nvim_buf_set_lines(0, cursor_line_num - 1, cursor_line_num - 1, false, { "" })
+    end
+    vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
+    vim.cmd("startinsert")
   elseif cin == util.get_eol() then
+    vim.api.nvim_set_current_line("")
     if is_blank then
       vim.api.nvim_feedkeys(cin, "n", false)
     else
+      vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
       vim.cmd("startinsert")
     end
   end
@@ -712,7 +732,8 @@ end
                           Autolist
 --]========================================================]
 ---@param cin string character input
-local autolist = function(cin)
+---@param clear_and_newline boolean whether to add a new line when cin is "o" or "O"
+local autolist = function(cin, clear_and_newline)
   local line = vim.api.nvim_get_current_line()
 
   -- First, separate quote marks from the entire line (preserving leading spaces)
@@ -736,21 +757,21 @@ local autolist = function(cin)
     end
 
     if box_text == "" then
-      clear_and_insert(cin, is_blankline(line))
+      clear_and_insert(cin, is_blankline(line), clear_and_newline)
     else
       vim.api.nvim_feedkeys(cin .. new_bol .. box, "n", false)
     end
   elseif list ~= nil then
     list = list .. " "
     if list_text == "" then
-      clear_and_insert(cin, is_blankline(line))
+      clear_and_insert(cin, is_blankline(line), clear_and_newline)
     else
       vim.api.nvim_feedkeys(cin .. new_bol .. list, "n", false)
     end
   elseif olist ~= nil then
     olist = (cin == "O") and decrement_olist(olist) or increment_olist(olist)
     if olist_text == "" then
-      clear_and_insert(cin, is_blankline(line))
+      clear_and_insert(cin, is_blankline(line), clear_and_newline)
     else
       vim.api.nvim_feedkeys(cin .. new_bol .. olist, "n", false)
     end
@@ -765,7 +786,7 @@ local autolist = function(cin)
     -- Check if quote body is empty (only whitespace)
     local quote_text = sep_quote.body:match("^(.-)%s*$")
     if quote_text == "" then
-      clear_and_insert(cin, is_blankline(line))
+      clear_and_insert(cin, is_blankline(line), clear_and_newline)
     else
       vim.api.nvim_feedkeys(cin .. new_bol, "n", false)
     end
@@ -796,9 +817,9 @@ for _, toggle_mode in ipairs(toggle_modes) do
 end
 
 -- Autolist
-M.autolist_up = function() autolist("O") end
-M.autolist_down = function() autolist("o") end
-M.autolist_cr = function() autolist(util.get_eol()) end
+M.autolist_up = function() autolist("O", current_config.autolist_clear_and_newline) end
+M.autolist_down = function() autolist("o", current_config.autolist_clear_and_newline) end
+M.autolist_cr = function() autolist(util.get_eol(), current_config.autolist_clear_and_newline) end
 
 -- Config-switch
 M.switch_blankline_skip = function() switch_option("enable_blankline_skip") end

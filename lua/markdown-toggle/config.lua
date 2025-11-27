@@ -86,6 +86,8 @@ local config = {
   enable_unmarked_only = true,
   -- Automatically continue lists on new lines
   enable_autolist = true,
+  -- Whether to add a new line when autolist up / down on a empty list item
+  autolist_clear_and_newline = true,
   -- Maintain checkbox state when continuing lists
   enable_auto_samestate = false,
   -- Automatically recalculate ordered list numbers
