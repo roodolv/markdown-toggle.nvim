@@ -376,6 +376,11 @@ require("markdown-toggle").setup({
       ["<C-n>"] = "olist",
       ["<M-x>"] = "checkbox",  -- Cycles: foo → - foo → - [ ] foo → - [x] foo
     },
+    autolist = {
+      -- ["O"] = "autolist_up", -- Obsidian does not have `autolist_up`
+      -- ["o"] = "autolist_down", -- Obsidian does not have `autolist_down`
+      ["<CR>"] = "autolist_cr",
+    },
   },
 })
 ```
@@ -418,7 +423,11 @@ foo
 - [x] Ordered list auto-recalculation
 - [x] Plugin commands (`:MarkdownToggleSwitchXXX`)
 - [x] `v:count` (`vim.v.count`) support
-- [ ] Auto-remove marks on repeated `<CR>`
+- [x] Smart continuation for empty list items (contributed by [@Dieal](https://github.com/Dieal) in #37)
+- [ ] Comprehensive codebase refactoring
+- [ ] Add `mini.test` test framework
+- [ ] Improved autolist behavior
+- [ ] Grouped configuration structure
 - [ ] Tab indentation for quoted text
 - [ ] Additional functions: `link()`, `code()`, `codeblock()`, `bold()`, `italic()`, and `strikethrough()`
 - [ ] Breaking change (v1.0.0): Rename `heading()` → `heading_cycle()`
