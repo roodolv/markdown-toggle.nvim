@@ -1,5 +1,17 @@
 # Changelog
 
+## [v0.3.2](https://github.com/roodolv/markdown-toggle.nvim/compare/v0.3.1...v0.3.2) (2025-12-03)
+
+### Improvements
+- **api**: added config-switch for `obox_as_olist` ([#31](https://github.com/roodolv/markdown-toggle.nvim/pull/31))
+- **autolist**: smart continuation for empty list items ([#37](https://github.com/roodolv/markdown-toggle.nvim/pull/37))
+
+### Bug Fixes
+- **autolist**: prevent olist auto-recalc inside code blocks ([#35](https://github.com/roodolv/markdown-toggle.nvim/pull/35))
+
+### Refactoring
+- **toggle**: remove mark parameters and use cached variables ([c33b9bd](https://github.com/roodolv/markdown-toggle.nvim/commit/c33b9bd61962412b4712eb0c17e7eea80539104c))
+
 ## [v0.3.1](https://github.com/roodolv/markdown-toggle.nvim/compare/v0.3.0...v0.3.1) (2025-11-14)
 
 ### Bug Fixes
