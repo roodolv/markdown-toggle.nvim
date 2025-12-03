@@ -695,14 +695,24 @@ end
 ---@param cin string character input
 ---@param is_blank boolean whether the line is blank
 local clear_and_insert = function(cin, is_blank)
-  vim.api.nvim_set_current_line("") -- Clear current line
+  local cursor_line_num = vim.api.nvim_win_get_cursor(0)[1]
 
-  if cin == "o" or cin == "O" then
-    vim.api.nvim_feedkeys(cin, "n", false)
+  if cin == "o" then
+    -- Clear current line and create new line below
+    vim.api.nvim_set_current_line("")
+    vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
+    vim.cmd("startinsert")
+  elseif cin == "O" then
+    -- Clear current line and create new line above
+    vim.api.nvim_set_current_line("")
+    vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
+    vim.cmd("startinsert")
   elseif cin == util.get_eol() then
+    vim.api.nvim_set_current_line("")
     if is_blank then
       vim.api.nvim_feedkeys(cin, "n", false)
     else
+      vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
       vim.cmd("startinsert")
     end
   end
