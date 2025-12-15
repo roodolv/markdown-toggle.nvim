@@ -692,20 +692,36 @@ local toggle_with_vcount = function(toggle_mode)
   end
 end
 
+--[========================================================[
+                          Autolist
+--]========================================================]
 ---@param cin string character input
 ---@param is_blank boolean whether the line is blank
+--stylua: ignore
 local clear_and_insert = function(cin, is_blank)
   local cursor_line_num = vim.api.nvim_win_get_cursor(0)[1]
 
   if cin == "o" then
     -- Clear current line and create new line below
     vim.api.nvim_set_current_line("")
-    vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
+
+    if current_config.clear_and_newline then
+      vim.api.nvim_buf_set_lines(0, cursor_line_num, cursor_line_num, false, { "" })
+      vim.api.nvim_win_set_cursor(0, { cursor_line_num + 1, 0 })
+    else
+      vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
+    end
+
     vim.cmd("startinsert")
   elseif cin == "O" then
     -- Clear current line and create new line above
     vim.api.nvim_set_current_line("")
+
+    if current_config.clear_and_newline then
+      vim.api.nvim_buf_set_lines(0, cursor_line_num - 1, cursor_line_num - 1, false, { "" })
+    end
     vim.api.nvim_win_set_cursor(0, { cursor_line_num, 0 })
+
     vim.cmd("startinsert")
   elseif cin == util.get_eol() then
     vim.api.nvim_set_current_line("")
@@ -718,9 +734,6 @@ local clear_and_insert = function(cin, is_blank)
   end
 end
 
---[========================================================[
-                          Autolist
---]========================================================]
 ---@param cin string character input
 local autolist = function(cin)
   local line = vim.api.nvim_get_current_line()

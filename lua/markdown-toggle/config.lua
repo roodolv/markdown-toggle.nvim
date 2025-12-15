@@ -43,6 +43,7 @@ M.default_keymaps = default_keymaps
 ---@field list_before_box boolean
 ---@field obox_as_olist boolean
 ---@field heading_table string[]
+---@field clear_and_newline boolean
 ---@field enable_blankline_skip boolean
 ---@field enable_heading_skip boolean
 ---@field enable_unmarked_only boolean
@@ -77,6 +78,9 @@ local config = {
 
   -- The heading marks table used in `markdown-toggle.heading`
   heading_table = { "#", "##", "###", "####", "#####" },
+
+  -- Whether to add a new line when autolist up / down on a empty list item
+  clear_and_newline = true,
 
   -- Skip blank lines in Visual mode (except for `quote()`)
   enable_blankline_skip = true,
