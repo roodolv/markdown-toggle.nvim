@@ -32,17 +32,17 @@ module.exports = {
     },
     {
       value: "revert",
-      name: "revert: (PR)Reverting changes or removing existing features",
+      name: "revert: (Release Notes)Reverting changes or removing existing features",
       title: "Reverts",
     },
     {
       value: "refactor",
-      name: "refactor: (PR)Code changes that are not bug fixes or feature additions",
+      name: "refactor: (Release Notes)Code changes that are not bug fixes or feature additions",
       title: "Code Refactoring",
     },
     {
       value: "perf",
-      name: "perf: (PR)Changes to improve performance",
+      name: "perf: (Release Notes)Changes to improve performance",
       title: "Performance",
     },
     {
@@ -71,22 +71,39 @@ module.exports = {
   skipQuestions: ["body", "breaking", "footer"],
   scopes: [
     "",
-    "quote",
-    "list",
-    "olist",
-    "checkbox",
-    "heading",
-    "toggle",
-    "autolist",
+    // Core modules
+    "marks",
+    "features",
+    "shared",
     "config",
     "api",
     "keymap",
     "util",
+    // Specific marks modules
+    "quote",
+    "heading",
+    "list",
+    "olist",
+    "checkbox",
+    "codeblock",
+    // Specific features modules
+    "toggle",
+    "convert",
+    "autolist",
+    "olist-recalc",
+    // Testing
+    "test",
+    // Documentation & metadata
     "readme",
     "changelog",
+    "claude",
+    "docs",
+    // Development & CI/CD
     "git",
     "workflow",
     "release",
+    "setup",
+    // Other
     "other",
   ],
   // for Ticket Number
