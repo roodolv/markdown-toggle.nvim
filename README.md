@@ -424,13 +424,13 @@ foo
 - [x] Plugin commands (`:MarkdownToggleSwitchXXX`)
 - [x] `v:count` (`vim.v.count`) support
 - [x] Smart continuation for empty list items (contributed by [@Dieal](https://github.com/Dieal) in [#37](https://github.com/roodolv/markdown-toggle.nvim/pull/37))
-- [ ] Comprehensive codebase refactoring
+- [x] Comprehensive codebase refactoring
 - [ ] Add `mini.test` test framework
 - [ ] Improved autolist behavior
 - [ ] Grouped configuration structure
 - [ ] Tab indentation for quoted text
 - [ ] Additional functions: `link()`, `code()`, `codeblock()`, `bold()`, `italic()`, and `strikethrough()`
-- [ ] Breaking change (v1.0.0): Rename `heading()` → `heading_cycle()`
+- [ ] Rename `heading()` → `heading_cycle()`
 
 ## License
 
