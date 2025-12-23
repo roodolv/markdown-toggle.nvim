@@ -2,9 +2,19 @@ local new_set = MiniTest.new_set
 local eq = MiniTest.expect.equality
 
 local autolist = require("markdown-toggle.features.autolist")
+local list = require("markdown-toggle.marks.list")
+local checkbox = require("markdown-toggle.marks.checkbox")
 
 -- Test suite
-local T = new_set()
+local T = new_set({
+  hooks = {
+    pre_case = function()
+      -- Set up marks modules with default config
+      list.set_config("%-+%*", "-", { "-", "+", "*" })
+      checkbox.set_config("%-+%*", " x~>", "-", "x", { "x", "~", ">" })
+    end,
+  },
+})
 
 -- ========== Configuration ==========
 
