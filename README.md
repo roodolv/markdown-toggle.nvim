@@ -424,8 +424,8 @@ foo
 - [x] Plugin commands (`:MarkdownToggleSwitchXXX`)
 - [x] `v:count` (`vim.v.count`) support
 - [x] Smart continuation for empty list items (contributed by [@Dieal](https://github.com/Dieal) in [#37](https://github.com/roodolv/markdown-toggle.nvim/pull/37))
-- [x] Comprehensive codebase refactoring
-- [ ] Add `mini.test` test framework
+- [x] Comprehensive codebase refactoring ([#43](https://github.com/roodolv/markdown-toggle.nvim/pull/43))
+- [x] Add `mini.test` test framework ([#44](https://github.com/roodolv/markdown-toggle.nvim/pull/44))
 - [ ] Improved autolist behavior
 - [ ] Grouped configuration structure
 - [ ] Tab indentation for quoted text
