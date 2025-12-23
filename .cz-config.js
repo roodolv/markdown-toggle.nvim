@@ -91,12 +91,12 @@ module.exports = {
     "convert",
     "autolist",
     "olist-recalc",
-    // Testing
-    "test",
+    // Testing(mini.test)
+    "tests",
+    "specs",
     // Documentation & metadata
     "readme",
     "changelog",
-    "claude",
     "docs",
     // Development & CI/CD
     "git",
