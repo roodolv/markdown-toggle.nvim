@@ -5,7 +5,7 @@ local toggle = require("markdown-toggle.features.toggle")
 local heading = require("markdown-toggle.marks.heading")
 local list = require("markdown-toggle.marks.list")
 local checkbox = require("markdown-toggle.marks.checkbox")
-local converters = require("markdown-toggle.features.converters")
+local convert = require("markdown-toggle.features.convert")
 
 -- Test suite
 local T = new_set({
@@ -25,10 +25,10 @@ local T = new_set({
       toggle.set_config(config)
 
       -- Set up marks modules (quote and olist don't have set_config)
-      heading.set_config('#', { '#', '##', '###', '####', '#####', '######' })
-      list.set_config('%-+%*', '-', { '-', '+', '*' }) -- Order: - -> + -> *
-      checkbox.set_config('%-+%*', ' x~>', '-', 'x', { 'x', '~', '>' }) -- Order: x -> ~ -> >
-      converters.set_config('*+-', ' x~>', '-')
+      heading.set_config("#", { "#", "##", "###", "####", "#####", "######" })
+      list.set_config("%-+%*", "-", { "-", "+", "*" }) -- Order: - -> + -> *
+      checkbox.set_config("%-+%*", " x~>", "-", "x", { "x", "~", ">" }) -- Order: x -> ~ -> >
+      convert.set_config("*+-", " x~>", "-")
     end,
   },
 })
