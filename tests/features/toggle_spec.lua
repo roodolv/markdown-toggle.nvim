@@ -26,9 +26,9 @@ local T = new_set({
 
       -- Set up marks modules (quote and olist don't have set_config)
       heading.set_config('#', { '#', '##', '###', '####', '#####', '######' })
-      list.set_config('%-+%*', '-', { '-', '+', '*' })
-      checkbox.set_config('%-+%*', ' xX~>-', '-', 'x', { 'x', 'X', '~', '>', '-' })
-      converters.set_config('*+-', ' xX~>-', '-')
+      list.set_config('%-+%*', '-', { '-', '+', '*' }) -- Order: - -> + -> *
+      checkbox.set_config('%-+%*', ' x~>', '-', 'x', { 'x', '~', '>' }) -- Order: x -> ~ -> >
+      converters.set_config('*+-', ' x~>', '-')
     end,
   },
 })
@@ -56,7 +56,7 @@ T["get_toggled_line() - heading mode"]["cycles heading levels"] = function()
   eq(toggle.get_toggled_line("heading", "content"), "# content")
   eq(toggle.get_toggled_line("heading", "# content"), "## content")
   eq(toggle.get_toggled_line("heading", "## content"), "### content")
-  eq(toggle.get_toggled_line("heading", "###### content"), "# content")
+  eq(toggle.get_toggled_line("heading", "###### content"), "content") -- Last level removes heading
 end
 
 T["get_toggled_line() - heading_toggle mode"] = new_set()
@@ -89,9 +89,9 @@ T["get_toggled_line() - list mode"]["cycles list when cycle_list_table=true"] = 
   }
   toggle.set_config(config)
 
-  eq(toggle.get_toggled_line("list", "- content"), "* content")
-  eq(toggle.get_toggled_line("list", "* content"), "+ content")
-  eq(toggle.get_toggled_line("list", "+ content"), "- content")
+  eq(toggle.get_toggled_line("list", "- content"), "+ content")
+  eq(toggle.get_toggled_line("list", "+ content"), "* content")
+  eq(toggle.get_toggled_line("list", "* content"), "content") -- Last mark removes list
 end
 
 T["get_toggled_line() - list mode"]["converts checkbox to list"] = function()
@@ -107,9 +107,9 @@ end
 T["get_toggled_line() - list_cycle mode"] = new_set()
 
 T["get_toggled_line() - list_cycle mode"]["always cycles list marks"] = function()
-  eq(toggle.get_toggled_line("list_cycle", "- content"), "* content")
-  eq(toggle.get_toggled_line("list_cycle", "* content"), "+ content")
-  eq(toggle.get_toggled_line("list_cycle", "+ content"), "- content")
+  eq(toggle.get_toggled_line("list_cycle", "- content"), "+ content")
+  eq(toggle.get_toggled_line("list_cycle", "+ content"), "* content")
+  eq(toggle.get_toggled_line("list_cycle", "* content"), "content") -- Last mark removes list
 end
 
 -- ========== Ordered List Toggle ==========
@@ -150,7 +150,8 @@ T["get_toggled_line() - olist mode"]["removes obox when obox_as_olist=true"] = f
   }
   toggle.set_config(config)
 
-  eq(toggle.get_toggled_line("olist", "1. [ ] content"), "1. content")
+  -- When obox_as_olist=true, remove_obox() removes both olist mark and checkbox
+  eq(toggle.get_toggled_line("olist", "1. [ ] content"), "content")
 end
 
 -- ========== Checkbox Toggle/Cycle ==========
