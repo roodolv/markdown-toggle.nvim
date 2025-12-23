@@ -113,6 +113,28 @@ T["trigger_olist_recalc()"]["stop conditions"]["stops at code block"] = function
   eq(result[5], "1. after code")  -- Should not be recalculated
 end
 
+-- olist inside code block should NOT be recalculated
+T["trigger_olist_recalc()"]["stop conditions"]["does not recalculate olist inside code block"] = function()
+  set_lines({
+    "```md",
+    "1. inside code block",
+    "2. also inside",
+    "```",
+    "",
+    "1. outside code block",
+  })
+  set_cursor(6, 0)  -- Cursor on olist outside code block
+
+  olist_recalc.trigger_olist_recalc("all")
+
+  local result = get_lines()
+  -- Content inside code block should remain unchanged
+  eq(result[2], "1. inside code block")
+  eq(result[3], "2. also inside")
+  -- Outside should be recalculated normally
+  eq(result[6], "1. outside code block")
+end
+
 -- ========== Indentation ==========
 
 T["trigger_olist_recalc()"]["indentation"] = new_set()

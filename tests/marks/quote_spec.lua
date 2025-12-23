@@ -76,6 +76,20 @@ T['extract_quote_marks()']['returns empty string for non-quote lines'] = functio
   eq(quote.extract_quote_marks('content'), '')
 end
 
+-- Edge cases: consecutive quotes without spaces
+T['extract_quote_marks()']['handles triple quotes without spaces'] = function()
+  eq(quote.extract_quote_marks('>>>foo'), '>>>')
+end
+
+T['extract_quote_marks()']['handles triple quotes with spaces'] = function()
+  eq(quote.extract_quote_marks('> > > foo'), '> > > ')
+end
+
+T['extract_quote_marks()']['handles mixed quote patterns'] = function()
+  -- Pattern from manual test: "> >>> > hoge"
+  eq(quote.extract_quote_marks('> >>> > hoge'), '> >>> > ')
+end
+
 -- separate_quote()
 T['separate_quote()'] = new_set()
 

@@ -279,4 +279,22 @@ T["get_toggled_line() - quote preservation"]["preserves whitespace before quote"
   eq(toggle.get_toggled_line("olist", "    > content"), "    > 1. content")
 end
 
+-- ========== Future Consideration: olist + checkbox combined toggle ==========
+-- When toggling on a line that has both olist AND checkbox (e.g., "1. [ ] task"):
+--
+-- Current behavior with olist toggle:
+--   "1. [ ] task" -> olist toggle -> removes olist, leaves checkbox
+--
+-- Current behavior with checkbox toggle:
+--   "1. [ ] task" -> checkbox toggle -> cycles checkbox state (x, ~, >, etc.)
+--
+-- Potential future improvements (from manual test notes):
+--   1. When olist() on ordered checkbox:
+--      - Option A: Remove olist mark only
+--      - Option B: Remove both marks -> plain text
+--   2. When checkbox() on olist-only:
+--      - Add checkbox with olist prefix -> "1. [ ] content"
+--
+-- These behaviors may need configuration options for user preference.
+
 return T

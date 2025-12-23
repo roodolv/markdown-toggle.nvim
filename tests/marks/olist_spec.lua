@@ -124,4 +124,17 @@ T['decrement_olist()']['decrements number'] = function()
   eq(olist.decrement_olist('100'), '99. ')
 end
 
+-- Edge case: minimum value should be 1 (no 0 or negative numbers)
+T['decrement_olist()']['clips at minimum value 1'] = function()
+  eq(olist.decrement_olist('1'), '1. ')  -- Should not go to 0
+end
+
+-- matched_olist edge cases
+T['matched_olist()']['does not match zero or negative olist'] = function()
+  local _, mark1 = olist.matched_olist('0. content')
+  local _, mark2 = olist.matched_olist('-1. content')
+  eq(mark1, nil)  -- 0. should not be recognized as olist
+  eq(mark2, nil)  -- -1. should not be recognized as olist
+end
+
 return T

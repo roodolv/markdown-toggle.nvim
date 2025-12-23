@@ -231,4 +231,26 @@ T['cycle_obox()']['returns convert signal when list_before_box=true'] = function
   eq(checkbox.cycle_obox('1. [>] content', true), 'convert_to_olist')
 end
 
+-- ========== Custom box_table Configuration ==========
+
+T['custom box_table'] = new_set()
+
+T['custom box_table']['works with custom states'] = function()
+  -- Custom config: box_table = { "p", "I", "t", "c" }, checked_state = "p"
+  checkbox.set_config('%-+%*', ' pItc', '-', 'p', { 'p', 'I', 't', 'c' })
+
+  -- Create checkbox should use custom default list mark and empty box
+  eq(checkbox.create_box('content'), '- [ ] content')
+
+  -- Cycle should go through custom states
+  eq(checkbox.cycle_box('- [ ] content', false), '- [p] content')
+  eq(checkbox.cycle_box('- [p] content', false), '- [I] content')
+  eq(checkbox.cycle_box('- [I] content', false), '- [t] content')
+  eq(checkbox.cycle_box('- [t] content', false), '- [c] content')
+  eq(checkbox.cycle_box('- [c] content', false), '- [ ] content')  -- back to empty
+
+  -- Restore default config
+  checkbox.set_config('%-+%*=', ' x~!>', '-', 'x', { 'x', '~', '!', '>' })
+end
+
 return T
