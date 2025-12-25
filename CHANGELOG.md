@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.4.0](https://github.com/roodolv/markdown-toggle.nvim/compare/v0.3.2...v0.4.0) (2025-12-25)
+
+### Features
+- **config**: add clear_and_newline config for autolist_up/down ([#42](https://github.com/roodolv/markdown-toggle.nvim/pull/42))
+
+### Bug Fixes
+- **autolist**: fix autolist for ordered checkboxes ([#45](https://github.com/roodolv/markdown-toggle.nvim/pull/45))
+
+### Refactoring
+- refactor codebase entirely ([a7f2b38](https://github.com/roodolv/markdown-toggle.nvim/commit/a7f2b3818a44561479fb0cb8ffb110f9697effde))
+
 ## [v0.3.2](https://github.com/roodolv/markdown-toggle.nvim/compare/v0.3.1...v0.3.2) (2025-12-03)
 
 ### Improvements
