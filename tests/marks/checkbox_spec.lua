@@ -141,15 +141,18 @@ end
 T['matched_obox()'] = new_set()
 
 T['matched_obox()']['matches ordered checkbox'] = function()
-  local ws, num, state = checkbox.matched_obox('1. [ ] content')
+  local ws, num, state, text, trailing = checkbox.matched_obox('1. [ ] content')
   eq(ws, '')
   eq(num, '1')
   eq(state, ' ')
+  eq(text, 'content')
+  eq(trailing, '')
 end
 
 T['matched_obox()']['matches checked ordered checkbox'] = function()
-  local _, _, state = checkbox.matched_obox('1. [x] content')
+  local _, _, state, text = checkbox.matched_obox('1. [x] content')
   eq(state, 'x')
+  eq(text, 'content')
 end
 
 T['matched_obox()']['returns nil for non-obox lines'] = function()

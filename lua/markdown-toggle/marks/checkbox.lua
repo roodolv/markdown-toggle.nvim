@@ -29,7 +29,7 @@ M.empty_box = function() return "[ ]" end
 
 ---Match checkbox in line
 ---@param line string
----@return string|nil, string|nil, string|nil, string|nil, string|nil whitespace, mark, state, text, trailing
+---@return string|nil, string|nil, string|nil, string|nil, string|nil
 -- group1(whitespace): spaces or quotes
 -- group2(mark): dynamically generated from list_table
 -- group3(state): dynamically generated from box_table
@@ -96,8 +96,8 @@ end
 
 ---Match ordered checkbox in line
 ---@param line string
----@return string|nil, string|nil, string|nil whitespace, number, state
-M.matched_obox = function(line) return line:match("^([%s>]*)(%d+)%.%s%[([" .. box_states .. "])%]%s") end
+---@return string|nil, string|nil, string|nil, string|nil, string|nil
+M.matched_obox = function(line) return line:match("^([%s>]*)(%d+)%.%s%[([" .. box_states .. "])%]%s(.-)(%s*)$") end
 
 ---Check if line has an ordered checkbox
 ---@param line string
