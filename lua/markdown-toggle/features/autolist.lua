@@ -70,8 +70,15 @@ M.autolist = function(cin) -- TODO: Issue #39 (D)
   -- If a quote mark exists, combine the quote mark with the bol spaces
   if sep_quote.mark and sep_quote.mark ~= "" then new_bol = new_bol .. sep_quote.mark end
 
+  -- Check for unordered checkbox (- [ ] text)
   local _, box_mark, box_state, box_text, _ = checkbox.matched_box(sep_quote.body)
   local box = box_state ~= nil and string.format("%s [%s] ", box_mark, box_state) or nil
+
+  -- Check for ordered checkbox (1. [ ] text)
+  local _, obox_mark, obox_state, obox_text, _ = checkbox.matched_obox(sep_quote.body)
+  -- local obox = obox_state ~= nil
+  local obox = obox_state ~= nil and string.format("%s [%s] ", obox_mark, obox_state) or nil
+
   local _, list_mark, list_text, _ = list.matched_list(sep_quote.body)
   local _, olist_mark, olist_text, _ = olist.matched_olist(sep_quote.body)
 
@@ -85,6 +92,27 @@ M.autolist = function(cin) -- TODO: Issue #39 (D)
       clear_and_insert(cin, line_state.is_blankline(line))
     else
       vim.api.nvim_feedkeys(cin .. new_bol .. box, "n", false) -- TODO: Issue #39 (D)
+    end
+  elseif obox ~= nil then
+    obox_mark = (cin == "O") and olist.decrement_olist(obox_mark) or olist.increment_olist(obox_mark)
+
+    if not current_config.enable_auto_samestate then
+      obox = string.format("%s%s ", obox_mark, checkbox.empty_box())
+    else
+      obox = string.format("%s[%s] ", obox_mark, obox_state)
+    end
+
+    if obox_text == "" then
+      clear_and_insert(cin, line_state.is_blankline(line))
+    else
+      vim.api.nvim_feedkeys(cin .. new_bol .. obox, "n", false) -- TODO: Issue #39 (D)
+    end
+
+    -- Trigger recalculation after autolist creates olist (delayed)
+    if current_config.enable_olist_recalc then
+      vim.schedule(function()
+        olist_recalc.trigger_olist_recalc(current_config.enable_olist_recalc)
+      end)
     end
   elseif list_mark ~= nil then
     list_mark = list_mark .. " "
